@@ -25,6 +25,7 @@ public class UserDao {
             }
     }
 
+
     public void insert(String userName, String email, String passHash) throws SQLException{
         String sql = "INSERT INTO users(user_name, email, pass_hash) VALUES(?, ?, ?)";
 
@@ -36,6 +37,20 @@ public class UserDao {
                 ps.executeQuery();
             }
     }
+
+
+    public long count() throws SQLException{
+        long totalUsers;
+        String sql = "SELECT COUNT(*) FROM users";
+        try(Connection connection = Database.getConnection();
+        PreparedStatement ps = connection.prepareStatement(sql)){
+            ResultSet rSet = ps.executeQuery();
+            rSet.next();
+            totalUsers = rSet.getLong(1);
+            return totalUsers;
+        }
+    }
+
 
     public User dataToObject(ResultSet rSet) throws SQLException{
         return new User(
