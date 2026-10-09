@@ -20,20 +20,20 @@ O acesso é controlado por perfis (ADMIN, USER e VIEWER): novos usuários só en
 | nome       | VARCHAR(150) | NOT NULL           |                                 |
 | email      | VARCHAR(255) | NOT NULL UNIQUE FK |                                 |
 | senha_hash | TEXT         | NOT NULL           |                                 |
-| role       | CHAR         | NOT NULL           | A - admin, U - user, V - viewer |
-### Wishlisted User
+
+### Whitelisted User
 | Valor  | Tipo         | Constraints | Obs                                 |
 | ------ | ------------ | ----------- | ------------------------------------- |
 | email  | VARCHAR(255) | PK          |                                       |
-| status | CHAR         | NOT NULL    | A- activated, C - cancelled, O - open |
-| role   | CHAR  | NOT NULL    |                                       |
+| current_status | CHAR         | NOT NULL    | A- activated, C - cancelled, O - open |
+| cargo   | CHAR  | NOT NULL    | A - ADMIN, U - USER, V - VIEWER                                      |
 ### Preso
 | Valor                    | Tipo         | Constraints | Obs                                                                        |
 | ------------------------ | ------------ | ----------- | ---------------------------------------------------------------------------- |
 | id                       | SERIAL       | PK          |                                                                              |
 | numero_processo          | VARCHAR(25)  | NOT NULL    | 0000000-00.0000.8.10.0060                                                    |
 | nome                     | VARCHAR(150) | NOT NULL    |                                                                              |
-| status_beneficio_vencido | BOOL         | NOT NULL    |                                                                         |
+| beneficio_vencido | BOOLEAN         | NOT NULL    |                                                                         |
 | data_direito             | DATE         | NOT NULL    |                                                                              |
 | tipo                     | CHAR         | NOT NULL    | S - Progressao semiaberto, A - Progressão aberto, L - Livramento condicional |
 | date_ultima_analise      | DATE         | NOT NULL    |                                                                              |
