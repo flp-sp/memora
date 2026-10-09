@@ -37,7 +37,7 @@ public final class Database {
 
 
     private static String getEnvVar(String nome){
-        Dotenv dotenv = Dotenv.configure().directory(".env").load();
+        Dotenv dotenv = Dotenv.configure().directory(".").filename(".env").load();
         String envVar = dotenv.get(nome);
 
         if (envVar == null || envVar.isBlank()){

@@ -24,6 +24,7 @@ public class UserService {
         }
     }
 
+    
     public Optional<User> auth(String email, String passString){
         if(email == null || email.isBlank() || passString == null || passString.isBlank()){
             return Optional.empty();

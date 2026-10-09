@@ -1,4 +1,8 @@
 .gradle/
+gradle/
+.kotlin/
 .vscode/
 build/
 .env
+gradlew
+gradlew.bat
