@@ -2,7 +2,9 @@ package backend.service;
 
 import java.sql.SQLException;
 import java.util.Optional;
-
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import backend.repositories.Database;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import backend.repositories.UserDao;
 
@@ -13,14 +15,17 @@ import backend.model.User;
 public class UserService {
     private static final int CUSTO_BCRYPT = 12;
     private final UserDao userDao = new UserDao();
-    private final WhitelistedUserService whitelistedUserService = new WhitelistedUserService();
 
 
     public void ensureFirstUser(){
         try{
             if(userDao.count() == 0){
-                whitelistedUserService.create("null@g.c", 'A', 'A');
-                create("Admin", "null@g.c", "admin123");
+                String sql = "INSERT INTO whitelisted(email, current_status, sys_role) VALUES('null@g.c', 'A', 'A');INSERT INTO users(user_name, email, pass_hash) VALUES('Admin', 'null@g.c', '$2a$12$UGmrRsw51wre8p7URaNJl./buCT/W0bMRiMP/q.5hFE7fbuC51Jxe')";
+
+                try(Connection connection = Database.getConnection();
+                    PreparedStatement ps = connection.prepareStatement(sql)){
+                        ps.executeQuery();
+                    }
             }
         }
         catch(SQLException e){

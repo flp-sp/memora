@@ -8,6 +8,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,10 +30,23 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit){
     var pass by remember { mutableStateOf("") }
     var loading by remember {mutableStateOf(false)}
     var error by remember {mutableStateOf<String?>(null)}
-    val scope = rememberCoroutineScope()    
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit){
+        try{
+            withContext(Dispatchers.IO){
+                service.ensureFirstUser()
+            }
+        }
+        catch (e: CancellationException){}
+        catch (e: Exception){
+            if(e.message?.contains("Nenhum resultado") != true){
+                error = e.message
+            }
+        }
+    }
     
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){
-        fun login(){
+    fun login(){
             scope.launch {  
                 loading = true
                 error = null
@@ -55,7 +69,8 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit){
                 loading = false
             }
         }
-        
+    
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){        
         Column {
             Text("Bem vindo ao Memora", style = MaterialTheme.typography.h1)
             OutlinedTextField(

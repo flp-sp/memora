@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class WhitelistedUserDao {
     public void insert(String email, char currentStatus, char sysRole) throws SQLException{
-        String sql = "INSERT INTO users(email, current_status, sys_role) VALUES(?, ?, ?)";
+        String sql = "INSERT INTO whitelisted(email, current_status, sys_role) VALUES(?, ?, ?)";
 
         try(Connection connection = Database.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
