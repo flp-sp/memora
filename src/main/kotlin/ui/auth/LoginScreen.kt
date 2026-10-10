@@ -16,8 +16,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import backend.model.User
 import backend.service.UserService
+import backend.validation.ParameterValidation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -51,20 +53,26 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit){
                 loading = true
                 error = null
                 
-                try {
-                    val user: User? = withContext(Dispatchers.IO){
-                        service.auth(email, pass).orElse(null)
+                if(ParameterValidation.validateEmail(email) && ParameterValidation.validatePass(pass))
+                {
+                    try {
+                        val user: User? = withContext(Dispatchers.IO){
+                            service.auth(email, pass).orElse(null)
+                        }
+                        if (user != null){
+                            onLogin(user)
+                        }
+                        else{
+                            error = "Nome ou senha incorretos"
+                        }
                     }
-                    if (user != null){
-                        onLogin(user)
-                    }
-                    else{
-                        error = "Nome ou senha inválidos!"
+                    catch (e: CancellationException){}
+                    catch (e: Exception){
+                        error = e.message
                     }
                 }
-                catch (e: CancellationException){}
-                catch (e: Exception){
-                    error = e.message
+                else{
+                    error = "Nome ou senha inválidos"
                 }
                 loading = false
             }
@@ -76,12 +84,15 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit){
             OutlinedTextField(
                 value = email,
                 onValueChange = {email = it},
-                label = {Text("nome")}
+                label = {Text("Email")},
+                singleLine = true
             )
             OutlinedTextField(
                 value = pass,
                 onValueChange = {pass = it},
-                label = {Text("senha")}
+                label = {Text("Senha")},
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation()
             )
             Button(
                 onClick = { login() },
