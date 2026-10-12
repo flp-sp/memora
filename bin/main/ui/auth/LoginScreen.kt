@@ -1,0 +1,105 @@
+package ui.auth
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.Button
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import backend.model.User
+import backend.service.UserService
+import backend.validation.ParameterValidation
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import sun.rmi.server.Dispatcher
+
+@Composable
+fun loginScreen(service: UserService, onLogin: (User) -> Unit){
+    var email by remember { mutableStateOf("") }
+    var pass by remember { mutableStateOf("") }
+    var loading by remember {mutableStateOf(false)}
+    var error by remember {mutableStateOf<String?>(null)}
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit){
+        try{
+            withContext(Dispatchers.IO){
+                service.ensureFirstUser()
+            }
+        }
+        catch (e: CancellationException){}
+        catch (e: Exception){
+            if(e.message?.contains("Nenhum resultado") != true){
+                error = e.message
+            }
+        }
+    }
+    
+    fun login(){
+            scope.launch {  
+                loading = true
+                error = null
+                
+                if(ParameterValidation.validateEmail(email) && ParameterValidation.validatePass(pass))
+                {
+                    try {
+                        val user: User? = withContext(Dispatchers.IO){
+                            service.auth(email, pass).orElse(null)
+                        }
+                        if (user != null){
+                            onLogin(user)
+                        }
+                        else{
+                            error = "Nome ou senha incorretos"
+                        }
+                    }
+                    catch (e: CancellationException){}
+                    catch (e: Exception){
+                        error = e.message
+                    }
+                }
+                else{
+                    error = "Nome ou senha inválidos"
+                }
+                loading = false
+            }
+        }
+    
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center){        
+        Column {
+            Text("Bem vindo ao Memora", style = MaterialTheme.typography.h1)
+            OutlinedTextField(
+                value = email,
+                onValueChange = {email = it},
+                label = {Text("Email")},
+                singleLine = true
+            )
+            OutlinedTextField(
+                value = pass,
+                onValueChange = {pass = it},
+                label = {Text("Senha")},
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation()
+            )
+            Button(
+                onClick = { login() },
+                enabled = !loading,
+            ){Text("Entrar")}
+            
+            error?.let { Text(it, color = MaterialTheme.colors.error) }
+        }
+    }
+}

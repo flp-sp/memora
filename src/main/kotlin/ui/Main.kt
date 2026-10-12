@@ -14,6 +14,7 @@ import androidx.compose.ui.window.rememberWindowState
 import backend.model.User
 import backend.service.UserService
 import ui.auth.loginScreen
+import ui.register.homeScreen
 
 fun main() = application {
     Window(
@@ -33,7 +34,7 @@ fun app() {
     if (logado == null) {
         loginScreen(service) { usuarioLogado = it }
     }
-    else(
-        Text("Deu certo")
-    )
+    else{
+        homeScreen(logado) {usuarioLogado = null}
+    }
 }
