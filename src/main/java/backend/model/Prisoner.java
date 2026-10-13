@@ -1,12 +1,15 @@
 package backend.model;
 
+import java.time.LocalDate;
+
 public record Prisoner(
+    long id,
     String lawsuitNum,
     String prisonerName,
-    String dutyDate,
-    String sentenceType,
-    String dateLastAnalysis,
-    String dateLastService,
-    String dateTransferApac,
-    String jail
+    LocalDate dutyDate,
+    char sentenceType,
+    LocalDate dateLastAnalysis,
+    LocalDate dateLastService,
+    LocalDate dateTransferApac,
+    char jail
 ) {}

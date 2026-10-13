@@ -13,7 +13,7 @@ public class WhitelistedUserDao {
                 ps.setString(1, email);
                 ps.setString(2, String.valueOf(currentStatus));
                 ps.setString(3, String.valueOf(sysRole));
-                ps.executeQuery();
+                ps.executeUpdate();
             }
     }
 }

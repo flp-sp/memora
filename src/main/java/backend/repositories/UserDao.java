@@ -34,7 +34,7 @@ public class UserDao {
                 ps.setString(1, userName);
                 ps.setString(2, email);
                 ps.setString(3, passHash);
-                ps.executeQuery();
+                ps.executeUpdate();
             }
     }
 

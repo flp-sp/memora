@@ -1,54 +1,37 @@
 package ui.components.transformation
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.ExposedDropdownMenuDefaults
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.withStyle
-import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.sql.SQLException
-import java.time.format.DateTimeParseException
 
 object ProcessNumberTransformation : VisualTransformation {
     private const val BASE_LEN = 13
     private const val DEFAULT_SUFFIX = "8100060"
-    private const val TOTAL_LEN = 20
+    const val TOTAL_LEN = 20
     private val SEPARATORS = mapOf(7 to '-', 9 to '.', 13 to '.', 14 to '.', 16 to '.')
+
+    /** Mantém só dígitos e limita ao tamanho máximo. Use no onValueChange. */
+    fun sanitize(input: String): String =
+        input.filter { it.isDigit() }.take(TOTAL_LEN)
+
+    /** Retorna o número completo, com o sufixo padrão aplicado quando faltar. */
+    fun complete(typed: String): String {
+        val digits = sanitize(typed)
+        return if (digits.length < BASE_LEN) digits
+        else digits + DEFAULT_SUFFIX.drop(digits.length - BASE_LEN)
+    }
+
+    /** O número só é válido para salvar se tiver pelo menos BASE_LEN dígitos. */
+    fun isValid(typed: String): Boolean = sanitize(typed).length >= BASE_LEN
 
     override fun filter(text: AnnotatedString): TransformedText {
         val typed = text.text.take(TOTAL_LEN)
-        val full = if (typed.length < BASE_LEN) typed
-                   else typed + DEFAULT_SUFFIX.drop(typed.length - BASE_LEN)
+        val full = complete(typed)
 
         val isDigitAt = mutableListOf<Boolean>()
         val formatted = buildAnnotatedString {
@@ -81,3 +64,36 @@ object ProcessNumberTransformation : VisualTransformation {
         return TransformedText(formatted, mapping)
     }
 }
+
+/*
+ * ===== Uso no campo de texto =====
+ *
+ * var lawsuitNumber by remember { mutableStateOf("") }
+ *
+ * OutlinedTextField(
+ *     value = lawsuitNumber,
+ *     onValueChange = { lawsuitNumber = ProcessNumberTransformation.sanitize(it) },
+ *     visualTransformation = ProcessNumberTransformation,
+ *     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+ *     isError = lawsuitNumber.isNotEmpty() && !ProcessNumberTransformation.isValid(lawsuitNumber),
+ *     label = { Text("Número do processo") },
+ *     modifier = Modifier.fillMaxWidth()
+ * )
+ *
+ * TextButton(
+ *     enabled = ProcessNumberTransformation.isValid(lawsuitNumber),
+ *     onClick = {
+ *         // salva o número COMPLETO (com sufixo), não o texto digitado
+ *         val toSave = ProcessNumberTransformation.complete(lawsuitNumber)
+ *         scope.launch(Dispatchers.IO) { repository.save(toSave) }
+ *     }
+ * ) { Text("Salvar") }
+ *
+ *
+ * ===== Corrigir registros que já estão no banco (PostgreSQL) =====
+ * Ajuste o nome da tabela. Só afeta números com 13 a 19 dígitos.
+ *
+ * UPDATE sua_tabela
+ * SET lawsuit_number = lawsuit_number || substr('8100060', length(lawsuit_number) - 12)
+ * WHERE length(lawsuit_number) BETWEEN 13 AND 19;
+ */

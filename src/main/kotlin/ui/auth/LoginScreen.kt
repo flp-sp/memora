@@ -42,7 +42,11 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit){
         }
         catch (e: CancellationException){}
         catch (e: Exception){
-            if(e.message?.contains("Nenhum resultado") != true){
+            if(e.message?.contains("conexão") == true)
+            {
+                error = "Falha na conexão: Verifique sua conexão a internet."    
+            }
+            else{
                 error = e.message
             }
         }

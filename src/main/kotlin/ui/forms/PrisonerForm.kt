@@ -7,10 +7,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.AlertDialog
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
-import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
@@ -22,48 +18,67 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.OffsetMapping
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import backend.model.Prisoner
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.sql.SQLException
-import java.time.format.DateTimeParseException
 import ui.components.fields.DropdownField
 import ui.components.transformation.DateTransformation
 import ui.components.transformation.ProcessNumberTransformation
+import java.sql.SQLException
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
+private val DIGITS_DATE = DateTimeFormatter.ofPattern("ddMMyyyy")
+
+private val SENTENCE_TYPES = listOf("Progressão semiaberto", "Progressão aberto", "Livramento condicional")
+private val JAILS = listOf("APAC", "UPTIM")
+
+/**
+ * Converte o valor guardado no banco (char) de volta para o texto do dropdown.
+ * AJUSTE os valores abaixo para os mesmos chars usados no seu convertToChar.
+ * Aceita Char ou String, então funciona com qualquer um dos dois tipos no Prisoner.
+ */
+private fun sentenceTypeFromDb(value: Any?): String = when (value?.toString()) {
+    "S" -> "Progressão semiaberto"
+    "A" -> "Progressão aberto"
+    "L" -> "Livramento condicional"
+    else -> ""
+}
+
+private fun jailFromDb(value: Any?): String = when (value?.toString()) {
+    "A" -> "APAC"
+    "U" -> "UPTIM"
+    else -> ""
+}
+
+/**
+ * Formulário de cadastro e edição.
+ * Se [initial] for null, funciona como cadastro; caso contrário, como edição.
+ */
 @Composable
 fun prisonerForm(
+    initial: Prisoner? = null,
     onDismiss: () -> Unit,
     onConfirm: (String, String, String, String, String, String, String, String) -> Unit
 ) {
-    var lawsuitNum by remember { mutableStateOf("") }
-    var prisonerName by remember { mutableStateOf("") }
-    var dutyDate by remember { mutableStateOf("") }
-    var sentenceType by remember { mutableStateOf("") }
-    var dateLastAnalysis by remember { mutableStateOf("") }
-    var dateLastService by remember { mutableStateOf("") }
-    var dateTransferApac by remember { mutableStateOf("") }
-    var jail by remember { mutableStateOf("") }
+    var lawsuitNum by remember(initial) { mutableStateOf(initial?.lawsuitNum() ?: "") }
+    var prisonerName by remember(initial) { mutableStateOf(initial?.prisonerName() ?: "") }
+    var dutyDate by remember(initial) { mutableStateOf(initial?.dutyDate()?.format(DIGITS_DATE) ?: "") }
+    var sentenceType by remember(initial) { mutableStateOf(sentenceTypeFromDb(initial?.sentenceType())) }
+    var dateLastAnalysis by remember(initial) { mutableStateOf(initial?.dateLastAnalysis()?.format(DIGITS_DATE) ?: "") }
+    var dateLastService by remember(initial) { mutableStateOf(initial?.dateLastService()?.format(DIGITS_DATE) ?: "") }
+    var dateTransferApac by remember(initial) { mutableStateOf(initial?.dateTransferApac()?.format(DIGITS_DATE) ?: "") }
+    var jail by remember(initial) { mutableStateOf(jailFromDb(initial?.jail())) }
 
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
-    val sentenceTypes = listOf("Progressão semiaberto", "Progressão aberto", "Livramento condicional")
-    val jails = listOf("APAC", "UPTIM")
-
-    val isFormValid = lawsuitNum.isNotBlank() &&
+    val isFormValid = ProcessNumberTransformation.isValid(lawsuitNum) &&
             prisonerName.isNotBlank() &&
             sentenceType.isNotBlank() &&
             jail.isNotBlank() &&
@@ -79,7 +94,7 @@ fun prisonerForm(
             try {
                 withContext(Dispatchers.IO) {
                     onConfirm(
-                        lawsuitNum,
+                        ProcessNumberTransformation.complete(lawsuitNum),
                         prisonerName,
                         dutyDate.toFormattedDate(),
                         sentenceType,
@@ -97,21 +112,16 @@ fun prisonerForm(
             } catch (e: SQLException) {
                 error = "Erro ao salvar no banco: ${e.message}"
             } catch (e: Exception) {
-                if(e.message?.contains("Nenhum resultado") != true){
                 error = e.message
-            }else{
-                onDismiss()
-            }
             } finally {
                 loading = false
-                
             }
         }
     }
 
     AlertDialog(
         onDismissRequest = { if (!loading) onDismiss() },
-        title = { Text("Cadastro de preso") },
+        title = { Text(if (initial == null) "Cadastro de preso" else "Editar preso") },
         text = {
             Column(
                 modifier = Modifier.verticalScroll(rememberScrollState()),
@@ -119,9 +129,11 @@ fun prisonerForm(
             ) {
                 OutlinedTextField(
                     value = lawsuitNum,
-                    onValueChange = { lawsuitNum = it },
+                    onValueChange = { lawsuitNum = ProcessNumberTransformation.sanitize(it) },
                     label = { Text("Nº do processo") },
                     singleLine = true,
+                    isError = lawsuitNum.isNotEmpty() && !ProcessNumberTransformation.isValid(lawsuitNum),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     visualTransformation = ProcessNumberTransformation
                 )
@@ -134,13 +146,13 @@ fun prisonerForm(
                 )
                 DateField("Data do direito", dutyDate) { dutyDate = it }
 
-                DropdownField("Tipo de pena", sentenceTypes, sentenceType) { sentenceType = it }
+                DropdownField("Tipo de pena", SENTENCE_TYPES, sentenceType) { sentenceType = it }
 
                 DateField("Data da última análise", dateLastAnalysis) { dateLastAnalysis = it }
                 DateField("Data do último atendimento", dateLastService) { dateLastService = it }
                 DateField("Data da transferência para APAC", dateTransferApac) { dateTransferApac = it }
 
-                DropdownField("Unidade prisional", jails, jail) { jail = it }
+                DropdownField("Unidade prisional", JAILS, jail) { jail = it }
 
                 error?.let { Text(it, color = MaterialTheme.colors.error) }
             }

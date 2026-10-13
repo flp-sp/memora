@@ -6,3 +6,4 @@ build/
 .env
 gradlew
 gradlew.bat
+bin/
