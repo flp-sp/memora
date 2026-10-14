@@ -7,7 +7,7 @@ O acesso é controlado por perfis (ADMIN, USER e VIEWER): novos usuários só en
 
 ## Stack
 - UI: A interface de usuário usa `Kotlin` + `Compose`
-- Backend: Toda a lógica do sistema é feita com `Java`
+- Backend: Toda a lógica do sistema é feita com `Java 21`
 - Database: O banco de dados usado é o `PostgreSQL` e está hospedado no `neon`
 - Backup: Um script feito com `Python` realizará um `pg_dump` periodicamente
 
