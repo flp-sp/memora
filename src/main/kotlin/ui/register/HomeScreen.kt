@@ -1,5 +1,6 @@
 package ui.register
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -16,11 +17,12 @@ import ui.forms.prisonerForm
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun homeScreen(usuarioLogado: User, onLogout: () -> Unit) {
+fun homeScreen(usuarioLogado: User,onSelectPrisoner: (Prisoner) -> Unit ,onLogout: () -> Unit) {
     val prisonerService = remember { PrisonerService() }
     var prisoners by remember { mutableStateOf(emptyList<Prisoner>()) }
     var showPrisonerForm by remember { mutableStateOf(false) }
     var editingPrisioner by remember {mutableStateOf<Prisoner?>(null)}
+    var selectPrisoner by remember {mutableStateOf<Prisoner?>(null)}
 
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
 
@@ -65,7 +67,8 @@ fun homeScreen(usuarioLogado: User, onLogout: () -> Unit) {
         LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
             items(prisoners, key = { it.id() }) { p ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)
+                                .clickable { onSelectPrisoner(p) },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(p.lawsuitNum(), Modifier.weight(1.5f))
@@ -94,12 +97,16 @@ fun homeScreen(usuarioLogado: User, onLogout: () -> Unit) {
         }
     }
 
+    if (selectPrisoner != null){
+        val current = selectPrisoner
+    }
+    
     if (showPrisonerForm) {
         val current = editingPrisioner
             
         prisonerForm(
             initial = current,
-            onDismiss = { showPrisonerForm = false },
+            onDismiss = { showPrisonerForm = false; editingPrisioner = null },
             onConfirm = { lawsuitNum, prisonerName, dutyDate,
                         sentenceType, dateLastAnalysis,
                         dateLastService, dateTransferApac, jail ->

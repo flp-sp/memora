@@ -4,6 +4,4 @@ gradle/
 .vscode/
 build/
 .env
-gradlew
-gradlew.bat
 bin/

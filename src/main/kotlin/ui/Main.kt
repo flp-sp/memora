@@ -11,10 +11,12 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import backend.model.Prisoner
 import backend.model.User
 import backend.service.UserService
 import ui.auth.loginScreen
 import ui.register.homeScreen
+import ui.register.prisonerManagement
 
 fun main() = application {
     Window(
@@ -29,12 +31,19 @@ fun main() = application {
 fun app() {
     val service = remember { UserService() }
     var usuarioLogado by remember { mutableStateOf<User?>(null) }
+    var selectedPrisoner by remember {mutableStateOf<Prisoner?>(null)}
     val logado = usuarioLogado
+    val selected = selectedPrisoner
     
     if (logado == null) {
         loginScreen(service) { usuarioLogado = it }
     }
     else{
-        homeScreen(logado) {usuarioLogado = null}
+        if(selected == null){
+            homeScreen(logado, {selectedPrisoner = it}) {usuarioLogado = null}   
+        }
+        else{
+            prisonerManagement(selected, logado) {selectedPrisoner = null}
+        }
     }
 }

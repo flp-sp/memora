@@ -64,36 +64,3 @@ object ProcessNumberTransformation : VisualTransformation {
         return TransformedText(formatted, mapping)
     }
 }
-
-/*
- * ===== Uso no campo de texto =====
- *
- * var lawsuitNumber by remember { mutableStateOf("") }
- *
- * OutlinedTextField(
- *     value = lawsuitNumber,
- *     onValueChange = { lawsuitNumber = ProcessNumberTransformation.sanitize(it) },
- *     visualTransformation = ProcessNumberTransformation,
- *     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
- *     isError = lawsuitNumber.isNotEmpty() && !ProcessNumberTransformation.isValid(lawsuitNumber),
- *     label = { Text("Número do processo") },
- *     modifier = Modifier.fillMaxWidth()
- * )
- *
- * TextButton(
- *     enabled = ProcessNumberTransformation.isValid(lawsuitNumber),
- *     onClick = {
- *         // salva o número COMPLETO (com sufixo), não o texto digitado
- *         val toSave = ProcessNumberTransformation.complete(lawsuitNumber)
- *         scope.launch(Dispatchers.IO) { repository.save(toSave) }
- *     }
- * ) { Text("Salvar") }
- *
- *
- * ===== Corrigir registros que já estão no banco (PostgreSQL) =====
- * Ajuste o nome da tabela. Só afeta números com 13 a 19 dígitos.
- *
- * UPDATE sua_tabela
- * SET lawsuit_number = lawsuit_number || substr('8100060', length(lawsuit_number) - 12)
- * WHERE length(lawsuit_number) BETWEEN 13 AND 19;
- */
