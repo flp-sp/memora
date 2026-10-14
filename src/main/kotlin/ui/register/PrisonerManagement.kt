@@ -67,7 +67,7 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
             items(registers, key = { it.id() }) { r ->
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp)
-                                    .clickable {  },
+                                    .clickable { editingRegister = r; showManagementForm = true },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     
@@ -80,7 +80,8 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         TextButton(onClick = {
-                            
+                            registerService.delete(r.id())
+                            loadList()
                         }) { Text("Excluir") }
                     }
                 }
@@ -101,7 +102,18 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
                                     description,
                                     observations
                     )
-                }    
+                }
+                else{
+                    registerService.update(
+                                        current.id(), 
+                                userLogado.id(),
+                                        description,
+                                        observations
+                    )
+                }
+                editingRegister = null
+                showManagementForm = false
+                loadList()
             }
         )   
     }

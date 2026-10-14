@@ -9,7 +9,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import backend.model.Prisoner;
+import org.jetbrains.skia.Data;
+
 import backend.model.Register;
 
 public class RegisterDao {
@@ -23,6 +24,29 @@ public class RegisterDao {
                 ps.setDate(3, Date.valueOf(LocalDate.now()));
                 ps.setString(4, description);
                 ps.setString(5, observations);
+                ps.executeUpdate();
+            }
+    }
+
+    public void update(long id, long idUser, String description, String observations) throws SQLException{
+        String sql = "UPDATE register SET id_user = ?, date_register = ?, description = ?,"
+                                        +"observations = ? WHERE id = ?";
+        try(Connection connection = Database.getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)){
+                ps.setLong(1, idUser);
+                ps.setDate(2, Date.valueOf(LocalDate.now()));
+                ps.setString(3, description);
+                ps.setString(4, observations);
+                ps.setLong(5, id);
+                ps.executeUpdate();
+            }
+    }
+
+    public void delete(long id) throws SQLException{
+        String sql = "DELETE FROM register WHERE id = " + id;
+
+        try(Connection connection = Database.getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)){
                 ps.executeUpdate();
             }
     }

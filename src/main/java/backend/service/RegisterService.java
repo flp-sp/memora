@@ -20,6 +20,24 @@ public class RegisterService {
         }
     }
 
+    public void update(long id, long idUser, String description, String observations){
+        try{
+            registerDao.update(id, idUser, description, observations);
+        }
+        catch(SQLException e){
+            throw ServiceException.exceptionHanddler(e);
+        }
+    }
+
+    public void delete(long id){
+        try{
+            registerDao.delete(id);
+        }
+        catch(SQLException e){
+            throw ServiceException.exceptionHanddler(e);
+        }
+    }
+
     public List<Register> getList(Long id){
         try{
             return registerDao.list(id);
