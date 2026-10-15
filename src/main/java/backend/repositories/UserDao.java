@@ -52,6 +52,17 @@ public class UserDao {
     }
 
 
+    public String getUserNameById(Long id) throws SQLException{
+        String sql = "SELECT user_name FROM users WHERE id = " + id;
+        try(Connection connection = Database.getConnection();
+        PreparedStatement ps = connection.prepareStatement(sql)){
+            ResultSet rSet = ps.executeQuery();
+            rSet.next();
+            return rSet.getString("user_name");
+        }
+    }
+
+
     public User dataToObject(ResultSet rSet) throws SQLException{
         return new User(
             rSet.getLong("id"),

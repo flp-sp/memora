@@ -15,6 +15,7 @@ import backend.model.Prisoner
 import backend.model.Register
 import backend.service.PrisonerService
 import backend.service.RegisterService
+import ui.components.displays.PrisonerDetails
 import ui.forms.prisonerForm
 import ui.forms.serviceForm
 import java.time.format.DateTimeFormatter
@@ -31,6 +32,7 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
     var registers by remember {mutableStateOf(emptyList<Register>())}
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
     val dateTimeFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm") }
+    var editUserName by remember { mutableStateOf("") }
     
     var registerService = remember { RegisterService() }
     
@@ -43,26 +45,40 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
     }
     
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+    modifier = Modifier.fillMaxSize().padding(16.dp),
+    verticalArrangement = Arrangement.spacedBy(16.dp)
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Olá, ${ userLogado.userName() }", style = MaterialTheme.typography.h6)
-            OutlinedButton(onClick = onExit) { Text("Voltar") }
-        }
+        Text("Olá, ${ userLogado.userName() }", style = MaterialTheme.typography.h6)
+        OutlinedButton(onClick = onExit) { Text("Voltar") }
+    }
 
-        Card(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(8.dp)) {
-                OutlinedButton(onClick = { showManagementForm = true}) {
-                    Text("Adicionar agendamento")
-                }
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(8.dp)) {
+            OutlinedButton(onClick = { showManagementForm = true }) {
+                Text("Adicionar agendamento")
             }
         }
-        Divider()
+    }
+    Divider()
+    PrisonerDetails(
+        prisoner = selectedPrisoner,
+        modifier = Modifier.fillMaxWidth().weight(1f)
+    )
+    Divider()
+    
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
+            Text("Data de Criação", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
+            Text("Descriçao", Modifier.weight(2f), fontWeight = FontWeight.Bold)
+            Text("Observação", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
+            Text("Autoria", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
+            Text("Última edição", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
+            Spacer(Modifier.width(120.dp))
+        }
     
     LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
             items(registers, key = { it.id() }) { r ->
@@ -75,6 +91,14 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
                     Text(r.dateRegister().format(dateTimeFormatter), Modifier.weight(1.5f))
                     Text(r.description().preview(60), Modifier.weight(2f), maxLines = 1)
                     Text(r.observations().preview(60), Modifier.weight(2f), maxLines = 1)
+                    Text(registerService.getUserName(r.idUser()), Modifier.weight(2f))
+                    if (r.idUserEdit() > 0){
+                        editUserName = registerService.getUserName(r.idUserEdit())
+                    }
+                    else {
+                        editUserName = "Não editado"
+                    }
+                    Text(editUserName, Modifier.weight(2f))
 
                     Row(
                         modifier = Modifier.width(120.dp),

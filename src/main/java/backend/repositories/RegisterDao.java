@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import backend.model.Register;
+import backend.model.User;
 import backend.service.LogsService;
 
 public class RegisterDao {
