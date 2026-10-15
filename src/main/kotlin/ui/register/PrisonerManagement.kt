@@ -30,6 +30,7 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
     var editingRegister by remember {mutableStateOf<Register?>(null)}
     var registers by remember {mutableStateOf(emptyList<Register>())}
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+    val dateTimeFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm") }
     
     var registerService = remember { RegisterService() }
     
@@ -71,7 +72,7 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     
-                    Text(r.dateRegister().format(dateFormatter), Modifier.weight(1.5f))
+                    Text(r.dateRegister().format(dateTimeFormatter), Modifier.weight(1.5f))
                     Text(r.description().preview(60), Modifier.weight(2f), maxLines = 1)
                     Text(r.observations().preview(60), Modifier.weight(2f), maxLines = 1)
 
@@ -80,7 +81,7 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
                         horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         TextButton(onClick = {
-                            registerService.delete(r.id())
+                            registerService.delete(r.id(), userLogado.id())
                             loadList()
                         }) { Text("Excluir") }
                     }

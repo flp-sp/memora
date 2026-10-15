@@ -1,7 +1,7 @@
 package backend.model;
 
 public record User(
-    long id,
+    Long id,
     String userName,
     String email,
     String passHash

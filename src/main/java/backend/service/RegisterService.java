@@ -29,9 +29,9 @@ public class RegisterService {
         }
     }
 
-    public void delete(long id){
+    public void delete(long id, long idUserDel){
         try{
-            registerDao.delete(id);
+            registerDao.delete(id, idUserDel);
         }
         catch(SQLException e){
             throw ServiceException.exceptionHanddler(e);

@@ -1,13 +1,14 @@
 package backend.model;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 // alias de register no banco
 public record Register(
     long id,
     long idUser,
     long idPrisoner,
-    LocalDate dateRegister,
+    LocalDateTime dateRegister,
     String description,
-    String observations
+    String observations,
+    long idUserEdit
 ) {}

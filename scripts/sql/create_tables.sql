@@ -31,14 +31,29 @@ jail CHAR(1) NOT NULL CHECK(jail IN('A', 'U'))
 -- Registro
 CREATE TABLE register(
 id SERIAL PRIMARY KEY,
-id_user INT NOT NULL,   
+id_user INT NOT NULL,
 id_prisoner INT NOT NULL,
-date_register DATE NOT NULL,
+date_time_register TIMESTAMP NOT NULL,
 description TEXT NOT NULL,
 observations TEXT NULL,
+id_user_edit INT NULL,
 
 FOREIGN KEY(id_user) REFERENCES users(id),
 FOREIGN KEY(id_prisoner) REFERENCES prisoner(id)
+);
+
+-- Logs
+CREATE TABLE logs(
+    id SERIAL PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_prisoner INT NULL,
+    whitelisted_email VARCHAR(255) NULL,
+    description VARCHAR(50) NOT NULL,
+    date_time TIMESTAMP NOT NULL,
+
+    FOREIGN KEY(id_user) REFERENCES users(id),
+    FOREIGN KEY(id_prisoner) REFERENCES prisoner(id),
+    FOREIGN KEY(whitelisted_email) REFERENCES whitelisted(email)
 );
 
 -- Indices
