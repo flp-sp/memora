@@ -19,8 +19,9 @@ public class PrisonerDao {
                     String dateLastAnalysis,
                     String dateLastService,
                     String dateTransferApac,
-                    String jail) throws SQLException{
-        String sql = "INSERT INTO prisoner(lawsuit_number, prisoner_name, duty_date, sentence_type, date_last_analysis, date_last_service, date_transfer_apac, jail) VALUES(?, ?, ?, ?, ?, ?, ?, ?)";
+                    String jail,
+                    boolean adiministrativePending) throws SQLException{
+        String sql = "INSERT INTO prisoner(lawsuit_number, prisoner_name, duty_date, sentence_type, date_last_analysis, date_last_service, date_transfer_apac, jail, administrative_pending) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try(Connection connection = Database.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
@@ -32,6 +33,7 @@ public class PrisonerDao {
                 ps.setDate(6, Date.valueOf(convertToDate(dateLastService)));
                 ps.setObject(7, convertToDate(dateTransferApac));
                 ps.setString(8, convertToChar(jail));
+                ps.setBoolean(9, adiministrativePending);
                 ps.executeUpdate();
             }
     }
@@ -44,11 +46,12 @@ public class PrisonerDao {
                     String dateLastAnalysis,
                     String dateLastService,
                     String dateTransferApac,
-                    String jail) throws SQLException{
+                    String jail,
+                    boolean adiministrativePending) throws SQLException{
 
         String sql = "UPDATE prisoner SET lawsuit_number = ?, prisoner_name = ?,"
                     +"duty_date = ?, sentence_type = ?, date_last_analysis = ?, "
-                    +"date_last_service = ?, date_transfer_apac = ?, jail = ? WHERE id = ?";
+                    +"date_last_service = ?, date_transfer_apac = ?, jail = ?, administrative_pending = ? WHERE id = ?";
 
         try(Connection connection = Database.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
@@ -60,7 +63,8 @@ public class PrisonerDao {
                 ps.setDate(6, Date.valueOf(convertToDate(dateLastService)));
                 ps.setObject(7, convertToDate(dateTransferApac));
                 ps.setString(8, convertToChar(jail));
-                ps.setLong(9, id);
+                ps.setBoolean(9, adiministrativePending);
+                ps.setLong(10, id);
                 ps.executeUpdate();
             }
     }
@@ -98,7 +102,8 @@ public class PrisonerDao {
             rSet.getDate("date_last_analysis").toLocalDate(),
             rSet.getDate("date_last_service").toLocalDate(),
             rSet.getDate("date_transfer_apac") != null ? rSet.getDate("date_transfer_apac").toLocalDate() : null,
-            rSet.getString("jail").charAt(0));
+            rSet.getString("jail").charAt(0),
+            rSet.getBoolean("administrative_pending"));
     }
 
     private String convertToChar(String var){

@@ -25,7 +25,8 @@ sentence_type CHAR(1) NOT NULL CHECK (sentence_type IN('S', 'A','L')),
 date_last_analysis DATE NULL,
 date_last_service DATE NULL,
 date_transfer_apac DATE NULL,
-jail CHAR(1) NOT NULL CHECK(jail IN('A', 'U'))
+jail CHAR(1) NOT NULL CHECK(jail IN('A', 'U')),
+administrative_pending BOOLEAN NOT NULL
 );
 
 -- Registro
@@ -50,12 +51,15 @@ CREATE TABLE logs(
     whitelisted_email VARCHAR(255) NULL,
     description VARCHAR(50) NOT NULL,
     date_time TIMESTAMP NOT NULL,
+    id_register INT NULL,
 
     FOREIGN KEY(id_user) REFERENCES users(id),
     FOREIGN KEY(id_prisoner) REFERENCES prisoner(id),
-    FOREIGN KEY(whitelisted_email) REFERENCES whitelisted(email)
+    FOREIGN KEY(whitelisted_email) REFERENCES whitelisted(email),
+    FOREIGN KEY (id_register) REFERENCES register(id) ON DELETE SET NULL
 );
 
 -- Indices
 CREATE INDEX idx_register_user ON register (id_user, date_register DESC);
 CREATE INDEX idx_register_prisoner ON register (id_prisoner, date_register DESC);
+CREATE INDEX idx_logs_id_register ON logs(id_register);

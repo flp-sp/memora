@@ -11,5 +11,6 @@ public record Prisoner(
     LocalDate dateLastAnalysis,
     LocalDate dateLastService,
     LocalDate dateTransferApac,
-    char jail
+    char jail,
+    boolean administrativePending
 ) {}

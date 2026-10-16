@@ -36,12 +36,8 @@ private val DIGITS_DATE = DateTimeFormatter.ofPattern("ddMMyyyy")
 
 private val SENTENCE_TYPES = listOf("Progressão semiaberto", "Progressão aberto", "Livramento condicional")
 private val JAILS = listOf("APAC", "UPTIM")
+private val PENDING = listOf("Sim", "Não")
 
-/**
- * Converte o valor guardado no banco (char) de volta para o texto do dropdown.
- * AJUSTE os valores abaixo para os mesmos chars usados no seu convertToChar.
- * Aceita Char ou String, então funciona com qualquer um dos dois tipos no Prisoner.
- */
 private fun sentenceTypeFromDb(value: Any?): String = when (value?.toString()) {
     "S" -> "Progressão semiaberto"
     "A" -> "Progressão aberto"
@@ -55,15 +51,11 @@ private fun jailFromDb(value: Any?): String = when (value?.toString()) {
     else -> ""
 }
 
-/**
- * Formulário de cadastro e edição.
- * Se [initial] for null, funciona como cadastro; caso contrário, como edição.
- */
 @Composable
 fun prisonerForm(
     initial: Prisoner? = null,
     onDismiss: () -> Unit,
-    onConfirm: (String, String, String, String, String, String, String, String) -> Unit
+    onConfirm: (String, String, String, String, String, String, String, String, Boolean) -> Unit
 ) {
     var lawsuitNum by remember(initial) { mutableStateOf(initial?.lawsuitNum() ?: "") }
     var prisonerName by remember(initial) { mutableStateOf(initial?.prisonerName() ?: "") }
@@ -73,7 +65,8 @@ fun prisonerForm(
     var dateLastService by remember(initial) { mutableStateOf(initial?.dateLastService()?.format(DIGITS_DATE) ?: "") }
     var dateTransferApac by remember(initial) { mutableStateOf(initial?.dateTransferApac()?.format(DIGITS_DATE) ?: "") }
     var jail by remember(initial) { mutableStateOf(jailFromDb(initial?.jail())) }
-
+    var administrativePending by remember(initial) {mutableStateOf(initial?.administrativePending() ?: false)}
+    
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
@@ -101,7 +94,8 @@ fun prisonerForm(
                         dateLastAnalysis.toFormattedDate(),
                         dateLastService.toFormattedDate(),
                         dateTransferApac.toFormattedDate(),
-                        jail
+                        jail,
+                        administrativePending
                     )
                 }
                 onDismiss()
@@ -151,6 +145,9 @@ fun prisonerForm(
                 DateField("Data da última análise", dateLastAnalysis) { dateLastAnalysis = it }
                 DateField("Data do último atendimento", dateLastService) { dateLastService = it }
                 DateField("Data da transferência para APAC", dateTransferApac) { dateTransferApac = it }
+                
+                DropdownField("Pendencia administrativa",
+                                PENDING, if(administrativePending) "Sim" else "Não") { administrativePending = it == "Sim" }
 
                 DropdownField("Unidade prisional", JAILS, jail) { jail = it }
 

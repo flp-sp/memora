@@ -30,6 +30,10 @@ private fun dueInfo(dutyDate: LocalDate?): Pair<String, Color> {
     }
 }
 
+private fun pendingInfo(administrativePending: Boolean): Pair<String, Color> =
+    if (administrativePending) "Sim" to Color(0xFFC62828)   
+    else "Não" to Color(0xFF2E7D32)                         
+
 @Composable
 fun homeScreen(usuarioLogado: User,onSelectPrisoner: (Prisoner) -> Unit ,onLogout: () -> Unit) {
     val prisonerService = remember { PrisonerService() }
@@ -105,7 +109,8 @@ Spacer(Modifier.height(8.dp))
     Text("Processo", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
     Text("Nome", Modifier.weight(2f), fontWeight = FontWeight.Bold)
     Text("Último atendimento", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
-    Text("Vencimento", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
+    Text("Direito vencido", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
+    Text("Pendencia administrativa", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
     Spacer(Modifier.width(120.dp))
 }
 
@@ -114,6 +119,7 @@ Divider()
 LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
     items(filteredPrisoners, key = { it.id() }) { p ->
         val (dueText, dueColor) = dueInfo(p.dutyDate())
+        val (pendingText, pendingColor) = pendingInfo(p.administrativePending())
         val formattedLastService = p.dateLastService()?.format(dateFormatter) ?: "-"
 
         Row(
@@ -128,6 +134,12 @@ LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
                 dueText,
                 Modifier.weight(1.5f),
                 color = dueColor,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                pendingText,
+                Modifier.weight(1f),
+                color = pendingColor,
                 fontWeight = FontWeight.Bold
             )
 
@@ -163,19 +175,21 @@ LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
             onDismiss = { showPrisonerForm = false; editingPrisioner = null },
             onConfirm = { lawsuitNum, prisonerName, dutyDate,
                         sentenceType, dateLastAnalysis,
-                        dateLastService, dateTransferApac, jail ->
+                        dateLastService, dateTransferApac, jail, administrativePending ->
                 if(current == null){
                     prisonerService.create(
                         lawsuitNum, prisonerName, dutyDate,
                         sentenceType, dateLastAnalysis,
-                        dateLastService, dateTransferApac, jail
+                        dateLastService, dateTransferApac, jail,
+                        administrativePending
                     )
                 }
                 else{
                     prisonerService.update(
                         current.id(), lawsuitNum, prisonerName, dutyDate,
                         sentenceType, dateLastAnalysis,
-                        dateLastService, dateTransferApac, jail
+                        dateLastService, dateTransferApac, jail,
+                        administrativePending
                     )
                 }
                 editingPrisioner = null
