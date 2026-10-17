@@ -20,7 +20,7 @@ public class PrisonerDao {
                     String dateLastService,
                     String dateTransferApac,
                     String jail,
-                    boolean adiministrativePending) throws SQLException{
+                    String adiministrativePending) throws SQLException{
         String sql = "INSERT INTO prisoner(lawsuit_number, prisoner_name, duty_date, sentence_type, date_last_analysis, date_last_service, date_transfer_apac, jail, administrative_pending) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try(Connection connection = Database.getConnection();
@@ -33,7 +33,7 @@ public class PrisonerDao {
                 ps.setDate(6, Date.valueOf(convertToDate(dateLastService)));
                 ps.setObject(7, convertToDate(dateTransferApac));
                 ps.setString(8, convertToChar(jail));
-                ps.setBoolean(9, adiministrativePending);
+                ps.setString(9, adiministrativePending);
                 ps.executeUpdate();
             }
     }
@@ -47,7 +47,7 @@ public class PrisonerDao {
                     String dateLastService,
                     String dateTransferApac,
                     String jail,
-                    boolean adiministrativePending) throws SQLException{
+                    String adiministrativePending) throws SQLException{
 
         String sql = "UPDATE prisoner SET lawsuit_number = ?, prisoner_name = ?,"
                     +"duty_date = ?, sentence_type = ?, date_last_analysis = ?, "
@@ -63,7 +63,7 @@ public class PrisonerDao {
                 ps.setDate(6, Date.valueOf(convertToDate(dateLastService)));
                 ps.setObject(7, convertToDate(dateTransferApac));
                 ps.setString(8, convertToChar(jail));
-                ps.setBoolean(9, adiministrativePending);
+                ps.setString(9, adiministrativePending);
                 ps.setLong(10, id);
                 ps.executeUpdate();
             }
@@ -103,7 +103,7 @@ public class PrisonerDao {
             rSet.getDate("date_last_service").toLocalDate(),
             rSet.getDate("date_transfer_apac") != null ? rSet.getDate("date_transfer_apac").toLocalDate() : null,
             rSet.getString("jail").charAt(0),
-            rSet.getBoolean("administrative_pending"));
+            rSet.getString("administrative_pending"));
     }
 
     private String convertToChar(String var){

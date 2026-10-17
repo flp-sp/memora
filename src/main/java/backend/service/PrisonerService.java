@@ -17,7 +17,7 @@ public class PrisonerService {
                     String dateLastService,
                     String dateTransferApac,
                     String jail,
-                    boolean administrativePending){
+                    String administrativePending){
         try{
             prisonerDao.insert(lawsuitNum, prisonerName, dutyDate, sentenceType, dateLastAnalysis, dateLastService, dateTransferApac, jail, administrativePending);
         }
@@ -35,7 +35,7 @@ public class PrisonerService {
                     String dateLastService,
                     String dateTransferApac,
                     String jail,
-                    boolean administrativePending){
+                    String administrativePending){
         try{
             prisonerDao.update(id, lawsuitNum, prisonerName, dutyDate, sentenceType, dateLastAnalysis, dateLastService, dateTransferApac, jail, administrativePending);              
         }catch(SQLException e){

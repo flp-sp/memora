@@ -50,12 +50,4 @@ public class RegisterService {
         }
     }
 
-    public String getUserName(Long id){
-        try{
-            return userDao.getUserNameById(id);
-        }
-        catch(SQLException e){
-            throw ServiceException.exceptionHanddler(e);
-        }
-    }
 }

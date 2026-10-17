@@ -30,9 +30,13 @@ private fun dueInfo(dutyDate: LocalDate?): Pair<String, Color> {
     }
 }
 
-private fun pendingInfo(administrativePending: Boolean): Pair<String, Color> =
-    if (administrativePending) "Sim" to Color(0xFFC62828)   
-    else "Não" to Color(0xFF2E7D32)                         
+private fun pendingInfo(administrativePending: String?): Pair<String, Color> =
+    when (administrativePending) {
+        null, "", "SEM PENDÊNCIA" -> "SEM PENDÊNCIA" to Color(0xFF2E7D32)
+        "DOCUMENTO", "PEDIDO" -> administrativePending to Color(0xFFEF6C00)
+        "PARECER", "DECISÃO" -> administrativePending to Color(0xFFC62828) 
+        else -> administrativePending to Color.Gray
+    }                  
 
 @Composable
 fun homeScreen(usuarioLogado: User,onSelectPrisoner: (Prisoner) -> Unit ,onLogout: () -> Unit) {
@@ -110,7 +114,7 @@ Spacer(Modifier.height(8.dp))
     Text("Nome", Modifier.weight(2f), fontWeight = FontWeight.Bold)
     Text("Último atendimento", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
     Text("Direito vencido", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
-    Text("Pendencia administrativa", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
+    Text("Pendência administrativa", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
     Spacer(Modifier.width(120.dp))
 }
 
@@ -138,7 +142,7 @@ LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
             )
             Text(
                 pendingText,
-                Modifier.weight(1f),
+                Modifier.weight(1.5f),
                 color = pendingColor,
                 fontWeight = FontWeight.Bold
             )

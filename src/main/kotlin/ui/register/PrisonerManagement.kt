@@ -91,9 +91,9 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
                     Text(r.dateRegister().format(dateTimeFormatter), Modifier.weight(1.5f))
                     Text(r.description().preview(60), Modifier.weight(2f), maxLines = 1)
                     Text(r.observations().preview(60), Modifier.weight(2f), maxLines = 1)
-                    Text(registerService.getUserName(r.idUser()), Modifier.weight(2f))
+                    Text(r.userName(), Modifier.weight(2f))
                     if (r.idUserEdit() > 0){
-                        editUserName = registerService.getUserName(r.idUserEdit())
+                        editUserName = r.userNameEdit()
                     }
                     else {
                         editUserName = "Não editado"

@@ -10,5 +10,7 @@ public record Register(
     LocalDateTime dateRegister,
     String description,
     String observations,
-    long idUserEdit
+    long idUserEdit,
+    String userName,
+    String userNameEdit
 ) {}

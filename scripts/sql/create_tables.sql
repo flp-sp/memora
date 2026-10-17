@@ -26,7 +26,7 @@ date_last_analysis DATE NULL,
 date_last_service DATE NULL,
 date_transfer_apac DATE NULL,
 jail CHAR(1) NOT NULL CHECK(jail IN('A', 'U')),
-administrative_pending BOOLEAN NOT NULL
+administrative_pending VARCHAR(25) NOT NULL
 );
 
 -- Registro

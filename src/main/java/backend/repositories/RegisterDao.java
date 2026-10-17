@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import backend.model.Register;
-import backend.model.User;
 import backend.service.LogsService;
 
 public class RegisterDao {
@@ -61,7 +60,10 @@ public class RegisterDao {
     }
 
     public List<Register> list(Long id) throws SQLException{
-        String sql = "SELECT * FROM register WHERE id_prisoner = "+ id +" ORDER BY date_time_register";
+        String sql = "SELECT r.id, r.id_user, r.id_prisoner, r.date_time_register, r.description, r.observations, r.id_user_edit, u.user_name AS user_name, ue.user_name AS user_edit_name FROM register r " 
+                        + "LEFT JOIN users u  ON r.id_user = u.id " 
+                        + "LEFT JOIN users ue ON r.id_user_edit = ue.id "
+                        + "WHERE r.id_prisoner ="+ id +" ORDER BY date_time_register";
         try(Connection connection = Database.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
                 ResultSet rSet = ps.executeQuery();
@@ -81,7 +83,9 @@ public class RegisterDao {
             rSet.getTimestamp("date_time_register").toLocalDateTime(),
             rSet.getString("description"),
             rSet.getString("observations"),
-            rSet.getLong("id_user_edit")
+            rSet.getLong("id_user_edit"),
+            rSet.getString("user_name"),
+            rSet.getString("user_edit_name")
         );
     }
 }

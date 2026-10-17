@@ -36,7 +36,7 @@ private val DIGITS_DATE = DateTimeFormatter.ofPattern("ddMMyyyy")
 
 private val SENTENCE_TYPES = listOf("Progressão semiaberto", "Progressão aberto", "Livramento condicional")
 private val JAILS = listOf("APAC", "UPTIM")
-private val PENDING = listOf("Sim", "Não")
+private val PENDING = listOf("SEM PENDÊNCIA", "DOCUMENTO", "PEDIDO", "PARECER", "DECISÃO")
 
 private fun sentenceTypeFromDb(value: Any?): String = when (value?.toString()) {
     "S" -> "Progressão semiaberto"
@@ -55,7 +55,7 @@ private fun jailFromDb(value: Any?): String = when (value?.toString()) {
 fun prisonerForm(
     initial: Prisoner? = null,
     onDismiss: () -> Unit,
-    onConfirm: (String, String, String, String, String, String, String, String, Boolean) -> Unit
+    onConfirm: (String, String, String, String, String, String, String, String, String) -> Unit
 ) {
     var lawsuitNum by remember(initial) { mutableStateOf(initial?.lawsuitNum() ?: "") }
     var prisonerName by remember(initial) { mutableStateOf(initial?.prisonerName() ?: "") }
@@ -65,7 +65,7 @@ fun prisonerForm(
     var dateLastService by remember(initial) { mutableStateOf(initial?.dateLastService()?.format(DIGITS_DATE) ?: "") }
     var dateTransferApac by remember(initial) { mutableStateOf(initial?.dateTransferApac()?.format(DIGITS_DATE) ?: "") }
     var jail by remember(initial) { mutableStateOf(jailFromDb(initial?.jail())) }
-    var administrativePending by remember(initial) {mutableStateOf(initial?.administrativePending() ?: false)}
+    var administrativePending by remember(initial) {mutableStateOf(initial?.administrativePending()?.toString()?.takeIf { it in PENDING } ?: PENDING.first())}
     
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -146,9 +146,8 @@ fun prisonerForm(
                 DateField("Data do último atendimento", dateLastService) { dateLastService = it }
                 DateField("Data da transferência para APAC", dateTransferApac) { dateTransferApac = it }
                 
-                DropdownField("Pendencia administrativa",
-                                PENDING, if(administrativePending) "Sim" else "Não") { administrativePending = it == "Sim" }
-
+                DropdownField("Pendência administrativa", PENDING, administrativePending) { administrativePending = it }
+                
                 DropdownField("Unidade prisional", JAILS, jail) { jail = it }
 
                 error?.let { Text(it, color = MaterialTheme.colors.error) }
