@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import backend.model.User
 import backend.service.UserService
 import backend.validation.ParameterValidation
+import com.sun.org.apache.xpath.internal.operations.Bool
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,7 +29,7 @@ import kotlinx.coroutines.withContext
 import sun.rmi.server.Dispatcher
 
 @Composable
-fun loginScreen(service: UserService, onLogin: (User) -> Unit){
+fun loginScreen(service: UserService, onLogin: (User) -> Unit, toSignin: (Boolean) -> Unit){
     var email by remember { mutableStateOf("") }
     var pass by remember { mutableStateOf("") }
     var loading by remember {mutableStateOf(false)}
@@ -102,6 +104,9 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit){
                 onClick = { login() },
                 enabled = !loading,
             ){Text("Entrar")}
+            OutlinedButton(
+                onClick = { toSignin(true)}
+            ){Text("teste")}
             
             error?.let { Text(it, color = MaterialTheme.colors.error) }
         }

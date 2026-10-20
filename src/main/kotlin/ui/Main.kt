@@ -15,6 +15,7 @@ import backend.model.Prisoner
 import backend.model.User
 import backend.service.UserService
 import ui.auth.loginScreen
+import ui.auth.signinScreen
 import ui.register.homeScreen
 import ui.register.prisonerManagement
 
@@ -32,11 +33,19 @@ fun app() {
     val service = remember { UserService() }
     var usuarioLogado by remember { mutableStateOf<User?>(null) }
     var selectedPrisoner by remember {mutableStateOf<Prisoner?>(null)}
+    var wannaSignin by remember {mutableStateOf(false)}
+    
     val logado = usuarioLogado
     val selected = selectedPrisoner
+    val signin = wannaSignin
     
     if (logado == null) {
-        loginScreen(service) { usuarioLogado = it }
+        if (!signin){
+            loginScreen(service, { usuarioLogado = it }) {wannaSignin = true}
+        }
+        else{
+            signinScreen(service) {wannaSignin = it}
+        }
     }
     else{
         if(selected == null){

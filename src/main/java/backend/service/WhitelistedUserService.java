@@ -4,6 +4,7 @@ import java.sql.SQLException;
 
 import backend.repositories.WhitelistedUserDao;
 import backend.exception.ServiceException;
+import backend.model.WhiteListed;
 
 public class WhitelistedUserService{
     WhitelistedUserDao whitelistedUserDao = new WhitelistedUserDao();
@@ -13,6 +14,21 @@ public class WhitelistedUserService{
             whitelistedUserDao.insert(email.trim(), currentStatus, sysRole);
         }
         catch(SQLException e){
+            throw ServiceException.exceptionHanddler(e);
+        }
+    }
+
+    public boolean checkEmailStatus(String email) {
+        try {
+            WhiteListed wl = whitelistedUserDao.searchEmail(email);
+
+            if (wl == null) {
+                return false;
+            }
+
+            return wl.currentStatus() == 'O';
+        }
+        catch (SQLException e) {
             throw ServiceException.exceptionHanddler(e);
         }
     }

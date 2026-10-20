@@ -17,11 +17,11 @@ public class ParameterValidation {
 
 
     public static boolean validatePass(String pass){
-        if (pass.length() < 6){
-            return false;
-        }
-        else{
-            return true;
-        }
+        return (pass.length() < 6)? false : true;
+    }
+
+
+    public static boolean validateNome(String nome){
+        return (nome.length() <= 150)? true : false;
     }
 }

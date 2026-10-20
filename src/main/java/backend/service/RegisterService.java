@@ -4,9 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import backend.exception.ServiceException;
-import backend.model.Prisoner;
 import backend.model.Register;
-import backend.model.User;
 import backend.repositories.RegisterDao;
 import backend.repositories.UserDao;
 

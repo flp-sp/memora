@@ -114,7 +114,7 @@ Spacer(Modifier.height(8.dp))
     Text("Nome", Modifier.weight(2f), fontWeight = FontWeight.Bold)
     Text("Último atendimento", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
     Text("Direito vencido", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
-    Text("Pendência administrativa", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
+    Text("Pendência", Modifier.weight(1.5f), fontWeight = FontWeight.Bold)
     Spacer(Modifier.width(120.dp))
 }
 

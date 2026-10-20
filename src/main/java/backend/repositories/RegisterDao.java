@@ -1,16 +1,14 @@
 package backend.repositories;
 
 import java.sql.Timestamp;
+import java.sql.Statement;
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import backend.model.Register;
 import backend.service.LogsService;
 
@@ -21,15 +19,20 @@ public class RegisterDao {
         String sql = "INSERT INTO register(id_user, id_prisoner, date_time_register, description, observations) VALUES(?, ?, ?, ?, ?)";
 
         try(Connection connection = Database.getConnection();
-            PreparedStatement ps = connection.prepareStatement(sql)){
+            PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
                 ps.setLong(1, idUser);
                 ps.setLong(2, idPrisoner);
                 ps.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
                 ps.setString(4, description);
                 ps.setString(5, observations);
                 ps.executeUpdate();
-
-                logsService.create(idUser, idPrisoner, null, "Insert register", null);
+                
+                try (ResultSet rs = ps.getGeneratedKeys()){
+                    if (rs.next()) {
+                        long idRegister = rs.getLong(1);
+                        logsService.create(idUser, idPrisoner, null, "Insert register", idRegister);
+                    }
+                }
             }
     }
 
