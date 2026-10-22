@@ -12,7 +12,9 @@ import backend.model.User;
 
 public class UserDao {
     public Optional<Credential> searchCreds(String email) throws SQLException{
-        String sql = "SELECT id, user_name, email, pass_hash FROM users WHERE email = ?";
+        String sql = "SELECT id, user_name, users.email, pass_hash, sys_role FROM users"
+                    +" LEFT JOIN whitelisted ON users.email = whitelisted.email"            
+                    +" WHERE users.email = ?";
 
         try (Connection connection = Database.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
@@ -53,7 +55,8 @@ public class UserDao {
     }
 
     public List<User> list() throws SQLException{
-        String sql = "SELECT * FROM users";
+        String sql = "SELECT id, user_name, users.email, pass_hash, sys_role FROM users"
+                        +" LEFT JOIN whitelisted ON users.email = whitelisted.email";
         try(Connection connection = Database.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
                 ResultSet rSet = ps.executeQuery();
@@ -70,7 +73,8 @@ public class UserDao {
             rSet.getLong("id"),
             rSet.getString("user_name"),
             rSet.getString("email"),
-            rSet.getString("pass_hash")
+            rSet.getString("pass_hash"),
+            rSet.getString("sys_role").charAt(0)
         );
     }
 }

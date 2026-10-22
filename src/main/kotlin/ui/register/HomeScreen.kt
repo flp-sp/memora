@@ -95,7 +95,7 @@ fun homeScreen(usuarioLogado: User,onSelectPrisoner: (Prisoner) -> Unit ,onLogou
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        IconButton(onClick = { showUserManagement = true }) {
+        IconButton(enabled = usuarioLogado.sysRole() == 'A', onClick = { showUserManagement = true }) {
             Icon(Icons.Default.Settings, contentDescription = "Configurações")
         }
         OutlinedButton(onClick = onLogout) { Text("Sair") }
