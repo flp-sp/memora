@@ -41,25 +41,6 @@ fun signinScreen(service: UserService, onSignin: (Boolean) -> Unit){
 
     var whiteListedService = remember { WhitelistedUserService() }
     
-    /*
-    LaunchedEffect(Unit){
-        try{
-            withContext(Dispatchers.IO){
-                service.ensureFirstUser()
-            }
-        }
-        catch (e: CancellationException){}
-        catch (e: Exception){
-            if(e.message?.contains("conexão") == true)
-            {
-                error = "Falha na conexão: Verifique sua conexão a internet."    
-            }
-            else{
-                error = e.message
-            }
-        }
-    }*/
-    
     fun signin(){
             scope.launch {  
                 loading = true
@@ -89,6 +70,7 @@ fun signinScreen(service: UserService, onSignin: (Boolean) -> Unit){
                     error = "Credenciais inválidas"
                 }
                 loading = false
+                onSignin(false)
             }
         }
     
@@ -118,6 +100,10 @@ fun signinScreen(service: UserService, onSignin: (Boolean) -> Unit){
                 onClick = { signin() },
                 enabled = !loading,
             ){Text("Cadastrar")}
+            OutlinedButton(
+                onClick = { onSignin(false) },
+                enabled = !loading,
+            ){Text("Voltar")}
             
             error?.let { Text(it, color = MaterialTheme.colors.error) }
         }

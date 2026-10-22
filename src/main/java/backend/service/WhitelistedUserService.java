@@ -34,8 +34,28 @@ public class WhitelistedUserService{
             if (wl == null) {
                 return false;
             }
+            if (wl.currentStatus() == 'O'){
+                whitelistedUserDao.update(email, 'A', wl.sysRole());
+                return true;
+            }
+            return false;
+        }
+        catch (SQLException e) {
+            throw ServiceException.exceptionHanddler(e);
+        }
+    }
 
-            return wl.currentStatus() == 'O';
+    public boolean checkEmailStatusLogin(String email) {
+        try {
+            WhiteListed wl = whitelistedUserDao.searchEmail(email);
+
+            if (wl == null) {
+                return false;
+            }
+            if (wl.currentStatus() == 'A'){
+                return true;
+            }
+            return false;
         }
         catch (SQLException e) {
             throw ServiceException.exceptionHanddler(e);

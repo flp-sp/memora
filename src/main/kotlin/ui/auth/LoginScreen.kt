@@ -20,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import backend.model.User
 import backend.service.UserService
+import backend.service.WhitelistedUserService
 import backend.validation.ParameterValidation
 import com.sun.org.apache.xpath.internal.operations.Bool
 import kotlinx.coroutines.CancellationException
@@ -34,6 +35,9 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit, toSignin: (Boolea
     var pass by remember { mutableStateOf("") }
     var loading by remember {mutableStateOf(false)}
     var error by remember {mutableStateOf<String?>(null)}
+    
+    var whiteListedService = remember { WhitelistedUserService() }
+    
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit){
@@ -66,7 +70,12 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit, toSignin: (Boolea
                             service.auth(email, pass).orElse(null)
                         }
                         if (user != null){
-                            onLogin(user)
+                            if (whiteListedService.checkEmailStatusLogin(user.email())){
+                                onLogin(user)
+                            }
+                            else{
+                                error = "Email não pôde ser verificado"
+                            }
                         }
                         else{
                             error = "Nome ou senha incorretos"
@@ -106,7 +115,7 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit, toSignin: (Boolea
             ){Text("Entrar")}
             OutlinedButton(
                 onClick = { toSignin(true)}
-            ){Text("teste")}
+            ){Text("Cadastre-se")}
             
             error?.let { Text(it, color = MaterialTheme.colors.error) }
         }

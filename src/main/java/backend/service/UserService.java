@@ -11,7 +11,6 @@ import backend.repositories.UserDao;
 
 import backend.exception.ServiceException;
 import backend.model.Credential;
-import backend.model.Prisoner;
 import backend.model.User;
 
 public class UserService {
@@ -22,7 +21,7 @@ public class UserService {
     public void ensureFirstUser(){
         try{
             if(userDao.count() == 0){
-                String sql = "INSERT INTO whitelisted(email, current_status, sys_role) VALUES('null@g.c', 'A', 'A');INSERT INTO users(user_name, email, pass_hash) VALUES('Admin', 'null@g.c', '$2a$12$UGmrRsw51wre8p7URaNJl./buCT/W0bMRiMP/q.5hFE7fbuC51Jxe')";
+                String sql = "INSERT INTO whitelisted(email, current_status, sys_role) VALUES('admin@local.net', 'A', 'A');INSERT INTO users(user_name, email, pass_hash) VALUES('Admin', 'admin@local.net', '$2a$12$UGmrRsw51wre8p7URaNJl./buCT/W0bMRiMP/q.5hFE7fbuC51Jxe')";
 
                 try(Connection connection = Database.getConnection();
                     PreparedStatement ps = connection.prepareStatement(sql)){
