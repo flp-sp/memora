@@ -1,3 +1,5 @@
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
+
 plugins {
     java
     kotlin("jvm") version "2.0.21"
@@ -28,5 +30,15 @@ kotlin { jvmToolchain(21) }
 compose.desktop {
     application {
         mainClass = "ui.MainKt"
+
+        nativeDistributions {
+            targetFormats(TargetFormat.Rpm, TargetFormat.Deb, TargetFormat.AppImage, TargetFormat.Exe, TargetFormat.Msi)
+            packageName = "Memora"
+            packageVersion = "1.0.0"
+
+            // jpackage monta um runtime enxuto e pode deixar de fora o java.sql (JDBC)
+            includeAllModules = true
+            // alternativa mais leve: modules("java.sql", "java.naming", "jdk.unsupported")
+        }
     }
 }
