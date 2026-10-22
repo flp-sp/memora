@@ -60,6 +60,6 @@ CREATE TABLE logs(
 );
 
 -- Indices
-CREATE INDEX idx_register_user ON register (id_user, date_register DESC);
-CREATE INDEX idx_register_prisoner ON register (id_prisoner, date_register DESC);
+CREATE INDEX idx_register_user ON register (id_user, date_time_register DESC);
+CREATE INDEX idx_register_prisoner ON register (id_prisoner, date_time_register DESC);
 CREATE INDEX idx_logs_id_register ON logs(id_register);

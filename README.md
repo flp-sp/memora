@@ -14,6 +14,12 @@ O acesso é controlado por perfis (ADMIN, USER e VIEWER(Ainda não implementado)
 ## Como rodar
 Recomenda-se rodar a aplicação hospedando o banco de dados no `Neon`, pois foi onde a aplicação foi desenvolvida nativamente.
 
+Usuario e senha padrões são:  
+```
+admin@local.net  
+admin123
+```
+
 ### Quick setup
 No seu terminal use:
 ```bash
