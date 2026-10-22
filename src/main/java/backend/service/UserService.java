@@ -1,6 +1,7 @@
 package backend.service;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Optional;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,6 +11,7 @@ import backend.repositories.UserDao;
 
 import backend.exception.ServiceException;
 import backend.model.Credential;
+import backend.model.Prisoner;
 import backend.model.User;
 
 public class UserService {
@@ -51,6 +53,15 @@ public class UserService {
         try{
             return userDao.searchCreds(email.trim()).filter(creds -> BCrypt.verifyer()
             .verify(passString.toCharArray(), creds.senhaHash()).verified).map(Credential::user);
+        }
+        catch(SQLException e){
+            throw ServiceException.exceptionHanddler(e);
+        }
+    }
+
+    public List<User> getList(){
+        try{
+            return userDao.list();
         }
         catch(SQLException e){
             throw ServiceException.exceptionHanddler(e);

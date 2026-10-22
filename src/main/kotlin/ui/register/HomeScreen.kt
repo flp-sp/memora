@@ -18,6 +18,11 @@ import ui.forms.prisonerForm
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
+import ui.forms.userManagement
 
 private fun dueInfo(dutyDate: LocalDate?): Pair<String, Color> {
     if (dutyDate == null) return "Sem vencimento" to Color.Gray
@@ -46,6 +51,7 @@ fun homeScreen(usuarioLogado: User,onSelectPrisoner: (Prisoner) -> Unit ,onLogou
     var editingPrisioner by remember {mutableStateOf<Prisoner?>(null)}
     var selectPrisoner by remember {mutableStateOf<Prisoner?>(null)}
     var searchQuery by remember {mutableStateOf("")}
+    var showUserManagement by remember { mutableStateOf(false) }
 
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
 
@@ -79,13 +85,22 @@ fun homeScreen(usuarioLogado: User,onSelectPrisoner: (Prisoner) -> Unit ,onLogou
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Olá, ${usuarioLogado.userName()}", style = MaterialTheme.typography.h6)
-            OutlinedButton(onClick = onLogout) { Text("Sair") }
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically
+) {
+    Text("Olá, ${usuarioLogado.userName()}", style = MaterialTheme.typography.h6)
+
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(onClick = { showUserManagement = true }) {
+            Icon(Icons.Default.Settings, contentDescription = "Configurações")
         }
+        OutlinedButton(onClick = onLogout) { Text("Sair") }
+    }
+}
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(8.dp)) {
@@ -202,4 +217,10 @@ LazyColumn(modifier = Modifier.fillMaxWidth().weight(1f)) {
             }
         )
     }
+    if (showUserManagement) {
+    userManagement(
+        onDismiss = { showUserManagement = false },
+        onConfirm = { showUserManagement = false }
+    )
+}
 }

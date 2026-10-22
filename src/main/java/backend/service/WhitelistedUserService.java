@@ -1,6 +1,7 @@
 package backend.service;
 
 import java.sql.SQLException;
+import java.util.List;
 
 import backend.repositories.WhitelistedUserDao;
 import backend.exception.ServiceException;
@@ -18,6 +19,14 @@ public class WhitelistedUserService{
         }
     }
 
+    public void update(String email, char status, char sysRole){
+        try{
+            whitelistedUserDao.update(email, status, sysRole);    
+        }catch(SQLException e){
+            throw ServiceException.exceptionHanddler(e);
+        }
+    }
+
     public boolean checkEmailStatus(String email) {
         try {
             WhiteListed wl = whitelistedUserDao.searchEmail(email);
@@ -29,6 +38,15 @@ public class WhitelistedUserService{
             return wl.currentStatus() == 'O';
         }
         catch (SQLException e) {
+            throw ServiceException.exceptionHanddler(e);
+        }
+    }
+
+    public List<WhiteListed> getList(){
+        try{
+            return whitelistedUserDao.list();
+        }
+        catch(SQLException e){
             throw ServiceException.exceptionHanddler(e);
         }
     }

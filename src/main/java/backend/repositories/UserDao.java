@@ -4,8 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-
 import backend.model.Credential;
 import backend.model.User;
 
@@ -50,7 +51,19 @@ public class UserDao {
             return totalUsers;
         }
     }
-    
+
+    public List<User> list() throws SQLException{
+        String sql = "SELECT * FROM users";
+        try(Connection connection = Database.getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)){
+                ResultSet rSet = ps.executeQuery();
+                List<User> list = new ArrayList<>();
+                while (rSet.next()){
+                    list.add(dataToObject(rSet));
+                }
+                return list;
+            }
+    }    
 
     public User dataToObject(ResultSet rSet) throws SQLException{
         return new User(

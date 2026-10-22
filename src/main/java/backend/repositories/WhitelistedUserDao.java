@@ -4,7 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
+import backend.exception.ServiceException;
+import backend.model.Prisoner;
 import backend.model.WhiteListed;
 
 public class WhitelistedUserDao {
@@ -16,6 +20,19 @@ public class WhitelistedUserDao {
                 ps.setString(1, email);
                 ps.setString(2, String.valueOf(currentStatus));
                 ps.setString(3, String.valueOf(sysRole));
+                ps.executeUpdate();
+            }
+    }
+
+    public void update(String email, char status, char sysRole) throws SQLException{
+        String sql = "UPDATE whitelisted SET email = ?, current_status = ?, sys_role = ?"
+                                        +" WHERE email = ?";
+        try(Connection connection = Database.getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)){
+                ps.setString(1, email);
+                ps.setString(2, String.valueOf(status));
+                ps.setString(3, String.valueOf(sysRole));
+                ps.setString(4, email);
                 ps.executeUpdate();
             }
     }
@@ -37,6 +54,18 @@ public class WhitelistedUserDao {
         }
     }
 
+    public List<WhiteListed> list() throws SQLException{
+        String sql = "SELECT * FROM whitelisted";
+        try(Connection connection = Database.getConnection();
+            PreparedStatement ps = connection.prepareStatement(sql)){
+                ResultSet rSet = ps.executeQuery();
+                List<WhiteListed> list = new ArrayList<>();
+                while (rSet.next()){
+                    list.add(dataToObject(rSet));
+                }
+                return list;
+            }
+    }
 
     private WhiteListed dataToObject(ResultSet rSet) throws SQLException{
         return new WhiteListed(
