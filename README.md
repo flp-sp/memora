@@ -123,7 +123,7 @@ WantedBy=timers.target
 > Você pode configurar os horários do seu backup aqui.
 
 ### Caso queira pode checar se funcionou
-```
+```bash
 sudo systemctl daemon-reload
 sudo systemctl enable --now memora-backup.timer
 
