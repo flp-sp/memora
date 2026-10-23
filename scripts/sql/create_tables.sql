@@ -31,16 +31,16 @@ administrative_pending VARCHAR(25) NOT NULL
 
 -- Registro
 CREATE TABLE register(
-id SERIAL PRIMARY KEY,
-id_user INT NOT NULL,
-id_prisoner INT NOT NULL,
-date_time_register TIMESTAMP NOT NULL,
-description TEXT NOT NULL,
-observations TEXT NULL,
-id_user_edit INT NULL,
+    id SERIAL PRIMARY KEY,
+    id_user INT NOT NULL,
+    id_prisoner INT NOT NULL,
+    date_time_register TIMESTAMP NOT NULL,
+    description TEXT NOT NULL,
+    observations TEXT NULL,
+    id_user_edit INT NULL,
 
-FOREIGN KEY(id_user) REFERENCES users(id),
-FOREIGN KEY(id_prisoner) REFERENCES prisoner(id)
+    FOREIGN KEY(id_user) REFERENCES users(id),
+    FOREIGN KEY(id_prisoner) REFERENCES prisoner(id) ON DELETE CASCADE
 );
 
 -- Logs
@@ -54,9 +54,9 @@ CREATE TABLE logs(
     id_register INT NULL,
 
     FOREIGN KEY(id_user) REFERENCES users(id),
-    FOREIGN KEY(id_prisoner) REFERENCES prisoner(id),
+    FOREIGN KEY(id_prisoner) REFERENCES prisoner(id) ON DELETE SET NULL,
     FOREIGN KEY(whitelisted_email) REFERENCES whitelisted(email),
-    FOREIGN KEY (id_register) REFERENCES register(id) ON DELETE SET NULL
+    FOREIGN KEY(id_register) REFERENCES register(id) ON DELETE SET NULL
 );
 
 -- Indices
