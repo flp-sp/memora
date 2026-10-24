@@ -10,6 +10,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 public final class Database {
     private static HikariDataSource dataSource;
+    private static final Dotenv DOTENV = loadDotenv();
     
     private Database(){};
 
@@ -36,12 +37,23 @@ public final class Database {
     }
 
 
+    private static Dotenv loadDotenv() {
+        return Dotenv.configure()
+                .directory(".")
+                .filename(".env")
+                .ignoreIfMissing()
+                .load();
+    }
+
+
     private static String getEnvVar(String nome){
-        Dotenv dotenv = Dotenv.configure().directory(".").filename(".env").load();
-        String envVar = dotenv.get(nome);
+        String envVar = System.getenv(nome);
+        if (envVar == null || envVar.isBlank()) {
+            envVar = DOTENV.get(nome);
+        }
 
         if (envVar == null || envVar.isBlank()){
-            throw new IllegalStateException("Variável de ambiente " + envVar + " não pôde ser encontrada.");
+            throw new IllegalStateException("Variável de ambiente " + nome + " não encontrada.");
         }
 
         return envVar;

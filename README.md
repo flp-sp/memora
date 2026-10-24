@@ -50,6 +50,12 @@ Depois você pode gerar um executável de acordo com o seu sistema operacional
 ./gradlew packageAppImage
 ```
 
+### Configuração no executável instalado
+
+O arquivo `.env` da raiz do projeto é incluído no pacote durante o build. Ele precisa existir antes de gerar o pacote. As variáveis de ambiente `DB_URL`, `DB_USER` e `DB_PASS` têm prioridade e podem ser usadas para sobrescrever os valores embutidos.
+
+Ao alterar as credenciais, gere o pacote novamente.
+
 Se quiser rodar direto sem compilar
 ```bash
 # Windows

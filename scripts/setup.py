@@ -40,7 +40,7 @@ def manual_env_gen(host, port, base, user, passwd, overwrite = False):
     lines = [
         f"DB_URL=jdbc:postgresql://{host}:{port}/{base}?sslmode=require",
         f"DB_USER={user}",
-        f"DB_PASSWORD={passwd}",
+        f"DB_PASS={passwd}",
     ]
 
     file = Path(PATH)

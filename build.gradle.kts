@@ -27,6 +27,12 @@ dependencies {
 
 kotlin { jvmToolchain(21) }
 
+tasks.processResources {
+    from(layout.projectDirectory) {
+        include(".env")
+    }
+}
+
 compose.desktop {
     application {
         mainClass = "ui.MainKt"
@@ -35,10 +41,17 @@ compose.desktop {
             targetFormats(TargetFormat.Rpm, TargetFormat.Deb, TargetFormat.AppImage, TargetFormat.Exe, TargetFormat.Msi)
             packageName = "Memora"
             packageVersion = "1.0.0"
-
-            // jpackage monta um runtime enxuto e pode deixar de fora o java.sql (JDBC)
             includeAllModules = true
-            // alternativa mais leve: modules("java.sql", "java.naming", "jdk.unsupported")
+
+            windows {
+                iconFile.set(project.file("icons/icon.ico"))
+                menu = true
+                shortcut = true
+            }
+            linux {
+                iconFile.set(project.file("icons/icon.png"))
+                menuGroup = "Office"
+            }
         }
     }
 }

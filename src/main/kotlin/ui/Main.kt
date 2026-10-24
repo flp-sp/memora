@@ -1,7 +1,5 @@
 package ui
 
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -18,41 +16,40 @@ import ui.auth.loginScreen
 import ui.auth.signinScreen
 import ui.register.homeScreen
 import ui.register.prisonerManagement
+import ui.theme.MemoraTheme
 
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
-        title = "Memora",
+        title = "Memora - Atendimento a Presos",
         state = rememberWindowState(placement = WindowPlacement.Maximized)
     ) {
-        MaterialTheme { app() }
+        MemoraTheme { app() }
     }
 }
+
 @Composable
 fun app() {
     val service = remember { UserService() }
     var usuarioLogado by remember { mutableStateOf<User?>(null) }
-    var selectedPrisoner by remember {mutableStateOf<Prisoner?>(null)}
-    var wannaSignin by remember {mutableStateOf(false)}
-    
+    var selectedPrisoner by remember { mutableStateOf<Prisoner?>(null) }
+    var wannaSignin by remember { mutableStateOf(false) }
+
     val logado = usuarioLogado
     val selected = selectedPrisoner
     val signin = wannaSignin
-    
+
     if (logado == null) {
-        if (!signin){
-            loginScreen(service, { usuarioLogado = it }) {wannaSignin = true}
+        if (!signin) {
+            loginScreen(service, { usuarioLogado = it }) { wannaSignin = true }
+        } else {
+            signinScreen(service) { wannaSignin = it }
         }
-        else{
-            signinScreen(service) {wannaSignin = it}
-        }
-    }
-    else{
-        if(selected == null){
-            homeScreen(logado, {selectedPrisoner = it}) {usuarioLogado = null}   
-        }
-        else{
-            prisonerManagement(selected, logado) {selectedPrisoner = null}
+    } else {
+        if (selected == null) {
+            homeScreen(logado, { selectedPrisoner = it }) { usuarioLogado = null }
+        } else {
+            prisonerManagement(selected, logado) { selectedPrisoner = null }
         }
     }
 }

@@ -6,6 +6,7 @@
 - You'll ask to run any commands needed, chmod and chown is forbidden.
 - You wont test it, leave it to me.
 - DON'T check for the `.env` file.
+- Always ask for moving to the next task, unless i tell you not to.
 
 ## What you'll do
 You just have to make the UI looks better, i just developed for tests, i didnt paid much attention to row and columns orientations, paddings, margins and colors.

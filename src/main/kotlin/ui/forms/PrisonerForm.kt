@@ -2,15 +2,23 @@ package ui.forms
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.AlertDialog
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
-import androidx.compose.material.TextButton
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,8 +33,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import ui.components.fields.DateField
 import ui.components.fields.DropdownField
-import ui.components.transformation.DateTransformation
 import ui.components.transformation.ProcessNumberTransformation
 import java.sql.SQLException
 import java.time.format.DateTimeFormatter
@@ -52,6 +60,31 @@ private fun jailFromDb(value: Any?): String = when (value?.toString()) {
 }
 
 @Composable
+private fun SectionTitle(text: String) {
+    Text(
+        text,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary
+    )
+}
+
+@Composable
+private fun FormError(message: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            message,
+            modifier = Modifier.padding(12.dp),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onErrorContainer
+        )
+    }
+}
+
+@Composable
 fun prisonerForm(
     initial: Prisoner? = null,
     onDismiss: () -> Unit,
@@ -65,20 +98,22 @@ fun prisonerForm(
     var dateLastService by remember(initial) { mutableStateOf(initial?.dateLastService()?.format(DIGITS_DATE) ?: "") }
     var dateTransferApac by remember(initial) { mutableStateOf(initial?.dateTransferApac()?.format(DIGITS_DATE) ?: "") }
     var jail by remember(initial) { mutableStateOf(jailFromDb(initial?.jail())) }
-    var administrativePending by remember(initial) {mutableStateOf(initial?.administrativePending()?.toString()?.takeIf { it in PENDING } ?: PENDING.first())}
-    
+    var administrativePending by remember(initial) {
+        mutableStateOf(initial?.administrativePending()?.toString()?.takeIf { it in PENDING } ?: PENDING.first())
+    }
+
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
     val isFormValid = ProcessNumberTransformation.isValid(lawsuitNum) &&
-            prisonerName.isNotBlank() &&
-            sentenceType.isNotBlank() &&
-            jail.isNotBlank() &&
-            dutyDate.length == 8 &&
-            dateLastAnalysis.length == 8 &&
-            dateLastService.length == 8 &&
-            (dateTransferApac.length == 8 || dateTransferApac.isEmpty())
+        prisonerName.isNotBlank() &&
+        sentenceType.isNotBlank() &&
+        jail.isNotBlank() &&
+        dutyDate.length == 8 &&
+        dateLastAnalysis.length == 8 &&
+        dateLastService.length == 8 &&
+        (dateTransferApac.length == 8 || dateTransferApac.isEmpty())
 
     fun save() {
         scope.launch {
@@ -102,11 +137,11 @@ fun prisonerForm(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: DateTimeParseException) {
-                error = "Uma das datas é inválida"
+                error = "Uma das datas é inválida."
             } catch (e: SQLException) {
-                error = "Erro ao salvar no banco: ${e.message}"
+                error = "Não foi possível salvar o preso. Verifique os dados e tente novamente."
             } catch (e: Exception) {
-                error = e.message
+                error = "Não foi possível salvar o preso. Tente novamente."
             } finally {
                 loading = false
             }
@@ -118,15 +153,23 @@ fun prisonerForm(
         title = { Text(if (initial == null) "Cadastro de preso" else "Editar preso") },
         text = {
             Column(
-                modifier = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                modifier = Modifier
+                    .widthIn(min = 520.dp, max = 640.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
+                SectionTitle("Identificação")
                 OutlinedTextField(
                     value = lawsuitNum,
                     onValueChange = { lawsuitNum = ProcessNumberTransformation.sanitize(it) },
                     label = { Text("Nº do processo") },
                     singleLine = true,
                     isError = lawsuitNum.isNotEmpty() && !ProcessNumberTransformation.isValid(lawsuitNum),
+                    supportingText = if (lawsuitNum.isNotEmpty() && !ProcessNumberTransformation.isValid(lawsuitNum)) {
+                        { Text("Informe o número completo do processo.") }
+                    } else {
+                        null
+                    },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.fillMaxWidth(),
                     visualTransformation = ProcessNumberTransformation
@@ -138,32 +181,91 @@ fun prisonerForm(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
-                DateField("Data do direito", dutyDate) { dutyDate = it }
 
-                DropdownField("Tipo de pena", SENTENCE_TYPES, sentenceType) { sentenceType = it }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                SectionTitle("Prazos e datas")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    DateField(
+                        label = "Data do direito",
+                        digits = dutyDate,
+                        modifier = Modifier.weight(1f),
+                        isError = dutyDate.isNotEmpty() && dutyDate.length != 8,
+                        onChange = { dutyDate = it }
+                    )
+                    DateField(
+                        label = "Data da última análise",
+                        digits = dateLastAnalysis,
+                        modifier = Modifier.weight(1f),
+                        isError = dateLastAnalysis.isNotEmpty() && dateLastAnalysis.length != 8,
+                        onChange = { dateLastAnalysis = it }
+                    )
+                }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    DateField(
+                        label = "Data do último atendimento",
+                        digits = dateLastService,
+                        modifier = Modifier.weight(1f),
+                        isError = dateLastService.isNotEmpty() && dateLastService.length != 8,
+                        onChange = { dateLastService = it }
+                    )
+                    DateField(
+                        label = "Data da transferência para APAC",
+                        digits = dateTransferApac,
+                        modifier = Modifier.weight(1f),
+                        isError = dateTransferApac.isNotEmpty() && dateTransferApac.length != 8,
+                        onChange = { dateTransferApac = it }
+                    )
+                }
 
-                DateField("Data da última análise", dateLastAnalysis) { dateLastAnalysis = it }
-                DateField("Data do último atendimento", dateLastService) { dateLastService = it }
-                DateField("Data da transferência para APAC", dateTransferApac) { dateTransferApac = it }
-                
-                DropdownField("Pendência administrativa", PENDING, administrativePending) { administrativePending = it }
-                
-                DropdownField("Unidade prisional", JAILS, jail) { jail = it }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                SectionTitle("Classificação")
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        DropdownField("Tipo de pena", SENTENCE_TYPES, sentenceType) { sentenceType = it }
+                    }
+                    Column(Modifier.weight(1f)) {
+                        DropdownField("Unidade prisional", JAILS, jail) { jail = it }
+                    }
+                }
+                DropdownField("Pendência administrativa", PENDING, administrativePending) {
+                    administrativePending = it
+                }
 
-                error?.let { Text(it, color = MaterialTheme.colors.error) }
+                error?.let { FormError(it) }
             }
         },
         confirmButton = {
-            TextButton(
+            Button(
                 enabled = isFormValid && !loading,
                 onClick = { save() }
-            ) { Text(if (loading) "Salvando..." else "Salvar") }
+            ) {
+                if (loading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
+                } else {
+                    Text("Salvar")
+                }
+            }
         },
         dismissButton = {
             TextButton(
                 enabled = !loading,
                 onClick = onDismiss
-            ) { Text("Cancelar") }
+            ) {
+                Text("Cancelar")
+            }
         }
     )
 }
@@ -171,21 +273,3 @@ fun prisonerForm(
 /** "25122024" -> "25/12/2024" */
 private fun String.toFormattedDate(): String =
     if (length == 8) "${substring(0, 2)}/${substring(2, 4)}/${substring(4)}" else this
-
-@Composable
-private fun DateField(
-    label: String,
-    digits: String,
-    onChange: (String) -> Unit
-) {
-    OutlinedTextField(
-        value = digits,
-        onValueChange = { newValue -> onChange(newValue.filter { it.isDigit() }.take(8)) },
-        label = { Text(label) },
-        placeholder = { Text("dd/mm/aaaa") },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        visualTransformation = DateTransformation,
-        modifier = Modifier.fillMaxWidth()
-    )
-}
