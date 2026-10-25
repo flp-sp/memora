@@ -1,7 +1,7 @@
 # INSTRUCTIONS MEMORA
 ## Agent permissions
 - You're able to change the code, but do not change the core of the system.
-1. You can only change the syntax, indentation or remove unused imports at `src/java`
+1. You are able to change minor features at `src/java` be careful on what you change here, we will need minor fixes here.
 2. You are free to change the UI in `src/kotlin`, make sure none of your changes will broke the logic of the DB connection or business rules
 - You'll ask to run any commands needed, chmod and chown is forbidden.
 - You wont test it, leave it to me.

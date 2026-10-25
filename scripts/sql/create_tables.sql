@@ -18,15 +18,15 @@ FOREIGN KEY(email) REFERENCES whitelisted(email)
 -- Preso
 CREATE TABLE prisoner(
 id SERIAL PRIMARY KEY,
-lawsuit_number VARCHAR(25) NOT NULL,
+lawsuit_number VARCHAR(25) NULL,
 prisoner_name VARCHAR(150) NOT NULL,
-duty_date DATE NOT NULL,
-sentence_type CHAR(1) NOT NULL CHECK (sentence_type IN('S', 'A','L')),
+duty_date DATE NULL,
+sentence_type CHAR(1) NULL CHECK (sentence_type IN('S', 'A','L')),
 date_last_analysis DATE NULL,
 date_last_service DATE NULL,
 date_transfer_apac DATE NULL,
-jail CHAR(1) NOT NULL CHECK(jail IN('A', 'U')),
-administrative_pending VARCHAR(25) NOT NULL
+jail CHAR(1) NULL CHECK(jail IN('A', 'U')),
+administrative_pending VARCHAR(25) NULL
 );
 
 -- Registro

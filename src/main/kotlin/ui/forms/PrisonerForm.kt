@@ -90,29 +90,28 @@ fun prisonerForm(
     onDismiss: () -> Unit,
     onConfirm: (String, String, String, String, String, String, String, String, String) -> Unit
 ) {
-    var lawsuitNum by remember(initial) { mutableStateOf(initial?.lawsuitNum() ?: "") }
+    var lawsuitNum by remember(initial) { mutableStateOf(initial?.lawsuitNum()?.takeIf { it.isNotBlank() } ?: "") }
     var prisonerName by remember(initial) { mutableStateOf(initial?.prisonerName() ?: "") }
     var dutyDate by remember(initial) { mutableStateOf(initial?.dutyDate()?.format(DIGITS_DATE) ?: "") }
-    var sentenceType by remember(initial) { mutableStateOf(sentenceTypeFromDb(initial?.sentenceType())) }
+    var sentenceType by remember(initial) { mutableStateOf(sentenceTypeFromDb(initial?.sentenceType()).takeIf { it.isNotBlank() } ?: "") }
     var dateLastAnalysis by remember(initial) { mutableStateOf(initial?.dateLastAnalysis()?.format(DIGITS_DATE) ?: "") }
     var dateLastService by remember(initial) { mutableStateOf(initial?.dateLastService()?.format(DIGITS_DATE) ?: "") }
     var dateTransferApac by remember(initial) { mutableStateOf(initial?.dateTransferApac()?.format(DIGITS_DATE) ?: "") }
-    var jail by remember(initial) { mutableStateOf(jailFromDb(initial?.jail())) }
+    var jail by remember(initial) { mutableStateOf(jailFromDb(initial?.jail()).takeIf { it.isNotBlank() } ?: "") }
     var administrativePending by remember(initial) {
-        mutableStateOf(initial?.administrativePending()?.toString()?.takeIf { it in PENDING } ?: PENDING.first())
+        val ap = initial?.administrativePending()?.toString()
+        mutableStateOf(ap?.takeIf { it.isNotBlank() && it in PENDING } ?: PENDING.first())
     }
 
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
-    val isFormValid = ProcessNumberTransformation.isValid(lawsuitNum) &&
+    val isFormValid = (lawsuitNum.isEmpty() || ProcessNumberTransformation.isValid(lawsuitNum)) &&
         prisonerName.isNotBlank() &&
-        sentenceType.isNotBlank() &&
-        jail.isNotBlank() &&
-        dutyDate.length == 8 &&
-        dateLastAnalysis.length == 8 &&
-        dateLastService.length == 8 &&
+        (dutyDate.isEmpty() || dutyDate.length == 8) &&
+        (dateLastAnalysis.isEmpty() || dateLastAnalysis.length == 8) &&
+        (dateLastService.isEmpty() || dateLastService.length == 8) &&
         (dateTransferApac.length == 8 || dateTransferApac.isEmpty())
 
     fun save() {

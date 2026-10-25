@@ -25,15 +25,35 @@ public class PrisonerDao {
 
         try(Connection connection = Database.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
-                ps.setString(1, lawsuitNum);
-                ps.setString(2, prisonerName);
-                ps.setDate(3, Date.valueOf(convertToDate(dutyDate)));
+                ps.setString(1, emptyToNull(lawsuitNum));
+                ps.setString(2, prisonerName == null ? "" : prisonerName);
+                LocalDate duty = convertToDate(dutyDate);
+                if (duty == null) {
+                    ps.setNull(3, java.sql.Types.DATE);
+                } else {
+                    ps.setDate(3, Date.valueOf(duty));
+                }
                 ps.setString(4, convertToChar(sentenceType));
-                ps.setDate(5, Date.valueOf(convertToDate(dateLastAnalysis)));
-                ps.setDate(6, Date.valueOf(convertToDate(dateLastService)));
-                ps.setObject(7, convertToDate(dateTransferApac));
+                LocalDate lastAnalysis = convertToDate(dateLastAnalysis);
+                if (lastAnalysis == null) {
+                    ps.setNull(5, java.sql.Types.DATE);
+                } else {
+                    ps.setDate(5, Date.valueOf(lastAnalysis));
+                }
+                LocalDate lastService = convertToDate(dateLastService);
+                if (lastService == null) {
+                    ps.setNull(6, java.sql.Types.DATE);
+                } else {
+                    ps.setDate(6, Date.valueOf(lastService));
+                }
+                LocalDate transferApac = convertToDate(dateTransferApac);
+                if (transferApac == null) {
+                    ps.setNull(7, java.sql.Types.DATE);
+                } else {
+                    ps.setObject(7, transferApac);
+                }
                 ps.setString(8, convertToChar(jail));
-                ps.setString(9, adiministrativePending);
+                ps.setString(9, emptyToNull(adiministrativePending));
                 ps.executeUpdate();
             }
     }
@@ -55,15 +75,35 @@ public class PrisonerDao {
 
         try(Connection connection = Database.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
-                ps.setString(1, lawsuitNum);
-                ps.setString(2, prisonerName);
-                ps.setDate(3, Date.valueOf(convertToDate(dutyDate)));
+                ps.setString(1, emptyToNull(lawsuitNum));
+                ps.setString(2, prisonerName == null ? "" : prisonerName);
+                LocalDate duty = convertToDate(dutyDate);
+                if (duty == null) {
+                    ps.setNull(3, java.sql.Types.DATE);
+                } else {
+                    ps.setDate(3, Date.valueOf(duty));
+                }
                 ps.setString(4, convertToChar(sentenceType));
-                ps.setDate(5, Date.valueOf(convertToDate(dateLastAnalysis)));
-                ps.setDate(6, Date.valueOf(convertToDate(dateLastService)));
-                ps.setObject(7, convertToDate(dateTransferApac));
+                LocalDate lastAnalysis = convertToDate(dateLastAnalysis);
+                if (lastAnalysis == null) {
+                    ps.setNull(5, java.sql.Types.DATE);
+                } else {
+                    ps.setDate(5, Date.valueOf(lastAnalysis));
+                }
+                LocalDate lastService = convertToDate(dateLastService);
+                if (lastService == null) {
+                    ps.setNull(6, java.sql.Types.DATE);
+                } else {
+                    ps.setDate(6, Date.valueOf(lastService));
+                }
+                LocalDate transferApac = convertToDate(dateTransferApac);
+                if (transferApac == null) {
+                    ps.setNull(7, java.sql.Types.DATE);
+                } else {
+                    ps.setObject(7, transferApac);
+                }
                 ps.setString(8, convertToChar(jail));
-                ps.setString(9, adiministrativePending);
+                ps.setString(9, emptyToNull(adiministrativePending));
                 ps.setLong(10, id);
                 ps.executeUpdate();
             }
@@ -93,20 +133,47 @@ public class PrisonerDao {
     }
 
     public Prisoner dataToObject(ResultSet rSet) throws SQLException{
+        String lawsuitNumber = rSet.getString("lawsuit_number");
+        if (lawsuitNumber == null) {
+            lawsuitNumber = "";
+        }
+        String prisonerName = rSet.getString("prisoner_name");
+        if (prisonerName == null) {
+            prisonerName = "";
+        }
+        java.sql.Date dutyDateSql = rSet.getDate("duty_date");
+        LocalDate dutyDate = dutyDateSql == null ? null : dutyDateSql.toLocalDate();
+        String sentenceTypeStr = rSet.getString("sentence_type");
+        char sentenceType = sentenceTypeStr == null || sentenceTypeStr.isEmpty() ? 0 : sentenceTypeStr.charAt(0);
+        java.sql.Date lastAnalysisSql = rSet.getDate("date_last_analysis");
+        LocalDate lastAnalysis = lastAnalysisSql == null ? null : lastAnalysisSql.toLocalDate();
+        java.sql.Date lastServiceSql = rSet.getDate("date_last_service");
+        LocalDate lastService = lastServiceSql == null ? null : lastServiceSql.toLocalDate();
+        java.sql.Date transferApacSql = rSet.getDate("date_transfer_apac");
+        LocalDate transferApac = transferApacSql == null ? null : transferApacSql.toLocalDate();
+        String jailStr = rSet.getString("jail");
+        char jail = jailStr == null || jailStr.isEmpty() ? 0 : jailStr.charAt(0);
+        String adminPending = rSet.getString("administrative_pending");
+        if (adminPending == null) {
+            adminPending = "";
+        }
         return new Prisoner(
             rSet.getLong("id"),
-            rSet.getString("lawsuit_number"),
-            rSet.getString("prisoner_name"),
-            rSet.getDate("duty_date").toLocalDate(),
-            rSet.getString("sentence_type").charAt(0),
-            rSet.getDate("date_last_analysis").toLocalDate(),
-            rSet.getDate("date_last_service").toLocalDate(),
-            rSet.getDate("date_transfer_apac") != null ? rSet.getDate("date_transfer_apac").toLocalDate() : null,
-            rSet.getString("jail").charAt(0),
-            rSet.getString("administrative_pending"));
+            lawsuitNumber,
+            prisonerName,
+            dutyDate,
+            sentenceType,
+            lastAnalysis,
+            lastService,
+            transferApac,
+            jail,
+            adminPending);
     }
 
     private String convertToChar(String var){
+        if (var == null || var.isBlank()) {
+            return null;
+        }
         switch (var) {
             case "Progressão semiaberto":
                 return "S";
@@ -123,12 +190,23 @@ public class PrisonerDao {
         }
     }
 
+    private String emptyToNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value;
+    }
+
     private LocalDate convertToDate(String dateString){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/uuuu")
         .withResolverStyle(java.time.format.ResolverStyle.STRICT);
-        if(dateString.isBlank() || dateString == ""){
+        if(dateString == null || dateString.isBlank() || dateString.equals("")){
             return null;
         }
-        return LocalDate.parse(dateString, formatter);
+        try {
+            return LocalDate.parse(dateString, formatter);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
