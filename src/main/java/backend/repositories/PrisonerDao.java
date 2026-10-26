@@ -184,7 +184,9 @@ public class PrisonerDao {
             case "APAC":
                 return "A";
             case "UPTIM":
-                return "U";             
+                return "U";
+            case "Regime Aberto":
+                return "R";
             default:
                 return null;
         }

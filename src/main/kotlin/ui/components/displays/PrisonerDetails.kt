@@ -69,6 +69,11 @@ fun PrisonerDetails(prisoner: Prisoner, modifier: Modifier = Modifier) {
     val (dueText, dueColor) = dueInfo(prisoner.dutyDate())
     val (pendingText, pendingColor) = pendingInfo(prisoner.administrativePending())
 
+    val prisonerName = prisoner.prisonerName().takeIf { it.isNotBlank() } ?: "Sem nome"
+    val lawsuitNum = prisoner.lawsuitNum().takeIf { it.isNotBlank() }
+    val sentenceTypeChar = prisoner.sentenceType().takeIf { it != 0.toChar() && it.code != 0 }
+    val jailChar = prisoner.jail().takeIf { it != 0.toChar() && it.code != 0 }
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -85,15 +90,23 @@ fun PrisonerDetails(prisoner: Prisoner, modifier: Modifier = Modifier) {
             ) {
                 Column(Modifier.weight(1f)) {
                     Text(
-                        prisoner.prisonerName(),
+                        prisonerName,
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
-                    Text(
-                        "Processo ${prisoner.lawsuitNum()}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    if (lawsuitNum != null) {
+                        Text(
+                            "Processo $lawsuitNum",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Text(
+                            "Sem número de processo",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -110,8 +123,16 @@ fun PrisonerDetails(prisoner: Prisoner, modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                DetailItem("Tipo de pena", sentenceTypeLabel(prisoner.sentenceType()), Modifier.weight(1f))
-                DetailItem("Unidade", jailLabel(prisoner.jail()), Modifier.weight(1f))
+                DetailItem(
+                    "Tipo de pena",
+                    if (sentenceTypeChar == null) "Não informado" else sentenceTypeLabel(sentenceTypeChar),
+                    Modifier.weight(1f)
+                )
+                DetailItem(
+                    "Unidade",
+                    if (jailChar == null) "Não informado" else jailLabel(jailChar),
+                    Modifier.weight(1f)
+                )
                 DetailItem("Última análise", prisoner.dateLastAnalysis().formatOrDash(), Modifier.weight(1f))
             }
 

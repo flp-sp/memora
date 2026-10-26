@@ -53,6 +53,7 @@ import kotlinx.coroutines.withContext
 import ui.components.dialogs.ConfirmDialog
 import ui.components.displays.dueInfo
 import ui.components.displays.pendingInfo
+import ui.components.fields.DropdownField
 import ui.components.layout.AppHeader
 import ui.forms.prisonerForm
 import ui.forms.userManagement
@@ -65,6 +66,15 @@ private const val DUE_WEIGHT = 1.5f
 private const val PENDING_WEIGHT = 1.3f
 private val ACTIONS_WIDTH = 176.dp
 
+private val JAIL_FILTER_OPTIONS = listOf("TODOS", "APAC", "UPTIM", "Regime Aberto")
+
+private fun jailToFilterLabel(jail: Char): String? = when (jail.uppercaseChar()) {
+    'A' -> "APAC"
+    'U' -> "UPTIM"
+    'R' -> "Regime Aberto"
+    else -> null
+}
+
 private fun isAdmin(user: User): Boolean = user.sysRole() == 'A'
 
 @Composable
@@ -74,6 +84,7 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
     var showPrisonerForm by remember { mutableStateOf(false) }
     var editingPrisoner by remember { mutableStateOf<Prisoner?>(null) }
     var searchQuery by remember { mutableStateOf("") }
+    var jailFilter by remember { mutableStateOf("TODOS") }
     var showUserManagement by remember { mutableStateOf(false) }
     var loadError by remember { mutableStateOf<String?>(null) }
     var prisonerToDelete by remember { mutableStateOf<Prisoner?>(null) }
@@ -87,9 +98,9 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
         prisoners = prisonerService.getList()
     }
 
-    val filteredPrisoners = remember(prisoners, searchQuery) {
+    val filteredPrisoners = remember(prisoners, searchQuery, jailFilter) {
         val q = searchQuery.trim()
-        if (q.isEmpty()) {
+        val base = if (q.isEmpty()) {
             prisoners
         } else {
             val onlyNumeric = q.all { it.isDigit() || it == '.' || it == '-' }
@@ -100,6 +111,11 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
                     (onlyNumeric && qDigits.isNotEmpty() &&
                         p.lawsuitNum().filter { it.isDigit() }.contains(qDigits))
             }
+        }
+        if (jailFilter == "TODOS") {
+            base
+        } else {
+            base.filter { p -> jailToFilterLabel(p.jail()) == jailFilter }
         }
     }
 
@@ -188,6 +204,9 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
                         },
                         singleLine = true
                     )
+                    Column(modifier = Modifier.width(220.dp)) {
+                        DropdownField("Unidade", JAIL_FILTER_OPTIONS, jailFilter) { jailFilter = it }
+                    }
                     Button(
                         onClick = { showPrisonerForm = true },
                         modifier = Modifier.height(56.dp)

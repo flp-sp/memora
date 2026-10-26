@@ -25,7 +25,7 @@ sentence_type CHAR(1) NULL CHECK (sentence_type IN('S', 'A','L')),
 date_last_analysis DATE NULL,
 date_last_service DATE NULL,
 date_transfer_apac DATE NULL,
-jail CHAR(1) NULL CHECK(jail IN('A', 'U')),
+jail CHAR(1) NULL CHECK(jail IN('A', 'U', 'R')),
 administrative_pending VARCHAR(25) NULL
 );
 

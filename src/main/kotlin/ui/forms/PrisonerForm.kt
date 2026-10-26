@@ -43,7 +43,7 @@ import java.time.format.DateTimeParseException
 private val DIGITS_DATE = DateTimeFormatter.ofPattern("ddMMyyyy")
 
 private val SENTENCE_TYPES = listOf("Progressão semiaberto", "Progressão aberto", "Livramento condicional")
-private val JAILS = listOf("APAC", "UPTIM")
+private val JAILS = listOf("APAC", "UPTIM", "Regime Aberto")
 private val PENDING = listOf("SEM PENDÊNCIA", "DOCUMENTO", "PEDIDO", "PARECER", "DECISÃO")
 
 private fun sentenceTypeFromDb(value: Any?): String = when (value?.toString()) {
@@ -56,6 +56,7 @@ private fun sentenceTypeFromDb(value: Any?): String = when (value?.toString()) {
 private fun jailFromDb(value: Any?): String = when (value?.toString()) {
     "A" -> "APAC"
     "U" -> "UPTIM"
+    "R" -> "Regime Aberto"
     else -> ""
 }
 

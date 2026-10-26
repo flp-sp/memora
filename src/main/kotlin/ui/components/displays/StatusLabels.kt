@@ -34,5 +34,6 @@ fun sentenceTypeLabel(type: Char): String = when (type.uppercaseChar()) {
 fun jailLabel(jail: Char): String = when (jail.uppercaseChar()) {
     'A' -> "APAC"
     'U' -> "UPTIM"
+    'R' -> "Regime Aberto"
     else -> "Não informado"
 }
