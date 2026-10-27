@@ -48,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import backend.model.Prisoner
 import backend.model.User
 import backend.service.PrisonerService
+import backend.storage.CredentialStorage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -191,7 +192,12 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
                     }
                 }
                 TextButton(
-                    onClick = onLogout,
+                    onClick = {
+                        scope.launch(Dispatchers.IO) {
+                            CredentialStorage.clear()
+                        }
+                        onLogout()
+                    },
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )

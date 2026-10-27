@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -38,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import backend.model.User
 import backend.service.UserService
 import backend.service.WhitelistedUserService
+import backend.storage.CredentialStorage
 import backend.validation.ParameterValidation
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -50,6 +53,7 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit, toSignin: (Boolea
     var pass by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    var rememberMe by remember { mutableStateOf(false) }
 
     val whiteListedService = remember { WhitelistedUserService() }
     val scope = rememberCoroutineScope()
@@ -63,6 +67,13 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit, toSignin: (Boolea
             throw e
         } catch (e: Exception) {
             error = "Não foi possível conectar ao banco de dados. Verifique sua conexão."
+        }
+
+        val saved = withContext(Dispatchers.IO) { CredentialStorage.load() }
+        if (saved != null) {
+            email = saved.getEmail()
+            pass = saved.getPassword()
+            rememberMe = true
         }
     }
 
@@ -78,6 +89,15 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit, toSignin: (Boolea
                     }
                     if (user != null) {
                         if (whiteListedService.checkEmailStatusLogin(user.email())) {
+                            if (rememberMe) {
+                                withContext(Dispatchers.IO) {
+                                    CredentialStorage.save(email, pass)
+                                }
+                            } else {
+                                withContext(Dispatchers.IO) {
+                                    CredentialStorage.clear()
+                                }
+                            }
                             onLogin(user)
                         } else {
                             error = "Este e-mail não está autorizado a acessar o sistema."
@@ -150,6 +170,19 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit, toSignin: (Boolea
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth()
                     )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Checkbox(
+                            checked = rememberMe,
+                            onCheckedChange = { rememberMe = it },
+                            enabled = !loading
+                        )
+                        Text("Manter conectado")
+                    }
 
                     Button(
                         onClick = { login() },
