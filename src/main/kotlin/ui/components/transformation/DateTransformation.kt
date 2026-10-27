@@ -15,17 +15,25 @@ object DateTransformation : VisualTransformation {
             }
         }
         val mapping = object : OffsetMapping {
-            override fun originalToTransformed(offset: Int): Int = when {
-                offset <= 1 -> offset
-                offset <= 3 -> offset + 1
-                else -> offset + 2
-            }.coerceAtMost(formatted.length)
+            override fun originalToTransformed(offset: Int): Int {
+                val safeOffset = offset.coerceIn(0, digits.length)
+                val result = when {
+                    safeOffset <= 1 -> safeOffset
+                    safeOffset <= 3 -> safeOffset + 1
+                    else -> safeOffset + 2
+                }
+                return result.coerceIn(0, formatted.length)
+            }
 
-            override fun transformedToOriginal(offset: Int): Int = when {
-                offset <= 2 -> offset
-                offset <= 5 -> offset - 1
-                else -> offset - 2
-            }.coerceIn(0, digits.length)
+            override fun transformedToOriginal(offset: Int): Int {
+                val safeOffset = offset.coerceIn(0, formatted.length)
+                val result = when {
+                    safeOffset <= 2 -> safeOffset
+                    safeOffset <= 5 -> safeOffset - 1
+                    else -> safeOffset - 2
+                }
+                return result.coerceIn(0, digits.length)
+            }
         }
         return TransformedText(AnnotatedString(formatted), mapping)
     }

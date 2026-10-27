@@ -55,11 +55,17 @@ object ProcessNumberTransformation : VisualTransformation {
         }
 
         val mapping = object : OffsetMapping {
-            override fun originalToTransformed(offset: Int): Int =
-                offset + SEPARATORS.keys.count { it < offset }
+            override fun originalToTransformed(offset: Int): Int {
+                val safeOffset = offset.coerceIn(0, typed.length)
+                val result = safeOffset + SEPARATORS.keys.count { it < safeOffset }
+                return result.coerceIn(0, formatted.length)
+            }
 
-            override fun transformedToOriginal(offset: Int): Int =
-                digitsBefore[offset.coerceIn(0, isDigitAt.size)].coerceAtMost(typed.length)
+            override fun transformedToOriginal(offset: Int): Int {
+                val safeOffset = offset.coerceIn(0, formatted.length)
+                val result = digitsBefore[safeOffset]
+                return result.coerceIn(0, typed.length)
+            }
         }
         return TransformedText(formatted, mapping)
     }
