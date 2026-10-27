@@ -133,7 +133,35 @@ fun PrisonerDetails(prisoner: Prisoner, modifier: Modifier = Modifier) {
                     if (jailChar == null) "Não informado" else jailLabel(jailChar),
                     Modifier.weight(1f)
                 )
+                val attorneyValue = prisoner.attorney()?.takeIf { it.isNotBlank() } ?: "DPE"
+                val attColor = if (attorneyValue == "DPE") Color(0xFF2E7D32) else Color(0xFFC62828)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "Defesa",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Surface(
+                        color = attColor.copy(alpha = 0.12f),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text(
+                            attorneyValue,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = attColor
+                        )
+                    }
+                }
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
+            ) {
                 DetailItem("Última análise", prisoner.dateLastAnalysis().formatOrDash(), Modifier.weight(1f))
+                Spacer(Modifier.weight(2f))
             }
 
             Row(

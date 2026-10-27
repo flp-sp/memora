@@ -17,9 +17,10 @@ public class PrisonerService {
                     String dateLastService,
                     String dateTransferApac,
                     String jail,
-                    String administrativePending){
+                    String administrativePending,
+                    String attorney){
         try{
-            prisonerDao.insert(lawsuitNum, prisonerName, dutyDate, sentenceType, dateLastAnalysis, dateLastService, dateTransferApac, jail, administrativePending);
+            prisonerDao.insert(lawsuitNum, prisonerName, dutyDate, sentenceType, dateLastAnalysis, dateLastService, dateTransferApac, jail, administrativePending, attorney);
         }
         catch(SQLException e){
             throw ServiceException.exceptionHanddler(e);
@@ -35,9 +36,10 @@ public class PrisonerService {
                     String dateLastService,
                     String dateTransferApac,
                     String jail,
-                    String administrativePending){
+                    String administrativePending,
+                    String attorney){
         try{
-            prisonerDao.update(id, lawsuitNum, prisonerName, dutyDate, sentenceType, dateLastAnalysis, dateLastService, dateTransferApac, jail, administrativePending);              
+            prisonerDao.update(id, lawsuitNum, prisonerName, dutyDate, sentenceType, dateLastAnalysis, dateLastService, dateTransferApac, jail, administrativePending, attorney);              
         }catch(SQLException e){
             throw ServiceException.exceptionHanddler(e);
         }

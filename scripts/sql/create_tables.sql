@@ -26,7 +26,8 @@ date_last_analysis DATE NULL,
 date_last_service DATE NULL,
 date_transfer_apac DATE NULL,
 jail CHAR(1) NULL CHECK(jail IN('A', 'U', 'R')),
-administrative_pending VARCHAR(25) NULL
+administrative_pending VARCHAR(25) NULL,
+attorney VARCHAR(20) NOT NULL DEFAULT 'DPE' CHECK(attorney IN('DPE', 'Advogado'))
 );
 
 -- Registro

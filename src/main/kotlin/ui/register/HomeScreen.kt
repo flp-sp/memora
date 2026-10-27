@@ -95,6 +95,8 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
     var deleteLoading by remember { mutableStateOf(false) }
     var deleteError by remember { mutableStateOf<String?>(null) }
     var sortAscending by remember { mutableStateOf(true) }
+    var sortByDutyDate by remember { mutableStateOf(false) }
+    var dutySortAscending by remember { mutableStateOf(true) }
     var filterWithPending by remember { mutableStateOf(false) }
     var filterDueSoon by remember { mutableStateOf(false) }
 
@@ -106,7 +108,7 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
         prisoners = prisonerService.getList()
     }
 
-    val filteredPrisoners = remember(prisoners, searchQuery, jailFilter, sortAscending, filterWithPending, filterDueSoon) {
+    val filteredPrisoners = remember(prisoners, searchQuery, jailFilter, sortAscending, sortByDutyDate, dutySortAscending, filterWithPending, filterDueSoon) {
         val q = searchQuery.trim()
         val base = if (q.isEmpty()) {
             prisoners
@@ -139,11 +141,20 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
             byPending.filter { p ->
                 val duty = p.dutyDate() ?: return@filter false
                 val days = java.time.temporal.ChronoUnit.DAYS.between(today, duty)
-                days <= 7
+                days <= 30
             }
         }
-        val sorted = byDue.sortedBy { p -> p.prisonerName().lowercase() }
-        if (sortAscending) sorted else sorted.asReversed()
+        val sorted = if (sortByDutyDate) {
+            val byDays = byDue.sortedBy { p ->
+                val duty = p.dutyDate()
+                if (duty == null) Long.MAX_VALUE / 4 else java.time.temporal.ChronoUnit.DAYS.between(today, duty)
+            }
+            if (dutySortAscending) byDays else byDays.asReversed()
+        } else {
+            val byName = byDue.sortedBy { p -> p.prisonerName().lowercase() }
+            if (sortAscending) byName else byName.asReversed()
+        }
+        sorted
     }
 
     LaunchedEffect(Unit) {
@@ -261,9 +272,28 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         FilterChip(
-                            selected = sortAscending,
-                            onClick = { sortAscending = !sortAscending },
-                            label = { Text(if (sortAscending) "Ordenar: A-Z" else "Ordenar: Z-A") }
+                            selected = !sortByDutyDate,
+                            onClick = {
+                                if (sortByDutyDate) {
+                                    sortByDutyDate = false
+                                    sortAscending = true
+                                } else {
+                                    sortAscending = !sortAscending
+                                }
+                            },
+                            label = { Text(if (!sortByDutyDate && !sortAscending) "Nome Z-A" else "Nome A-Z") }
+                        )
+                        FilterChip(
+                            selected = sortByDutyDate,
+                            onClick = {
+                                if (!sortByDutyDate) {
+                                    sortByDutyDate = true
+                                    dutySortAscending = true
+                                } else {
+                                    dutySortAscending = !dutySortAscending
+                                }
+                            },
+                            label = { Text(if (sortByDutyDate && !dutySortAscending) "Direito ↓" else "Direito ↑") }
                         )
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -277,7 +307,7 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
                             modifier = Modifier.clickable { filterDueSoon = !filterDueSoon }
                         ) {
                             Checkbox(checked = filterDueSoon, onCheckedChange = { filterDueSoon = it })
-                            Text("Direito a vencer ou vencido (até 7 dias)")
+                            Text("Direito a vencer ou vencido (até 30 dias)")
                         }
                     }
                 }
@@ -429,20 +459,22 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
             },
             onConfirm = { lawsuitNum, prisonerName, dutyDate,
                           sentenceType, dateLastAnalysis,
-                          dateLastService, dateTransferApac, jail, administrativePending ->
+                          dateLastService, dateTransferApac, jail, administrativePending, attorney ->
                 if (current == null) {
                     prisonerService.create(
                         lawsuitNum, prisonerName, dutyDate,
                         sentenceType, dateLastAnalysis,
                         dateLastService, dateTransferApac, jail,
-                        administrativePending
+                        administrativePending,
+                        attorney
                     )
                 } else {
                     prisonerService.update(
                         current.id(), lawsuitNum, prisonerName, dutyDate,
                         sentenceType, dateLastAnalysis,
                         dateLastService, dateTransferApac, jail,
-                        administrativePending
+                        administrativePending,
+                        attorney
                     )
                 }
                 editingPrisoner = null

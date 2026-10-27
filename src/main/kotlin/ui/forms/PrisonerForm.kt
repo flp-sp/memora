@@ -45,6 +45,7 @@ private val DIGITS_DATE = DateTimeFormatter.ofPattern("ddMMyyyy")
 private val SENTENCE_TYPES = listOf("Progressão semiaberto", "Progressão aberto", "Livramento condicional")
 private val JAILS = listOf("APAC", "UPTIM", "Regime Aberto")
 private val PENDING = listOf("SEM PENDÊNCIA", "DOCUMENTO", "PEDIDO", "PARECER", "DECISÃO")
+private val ATTORNEYS = listOf("DPE", "Advogado")
 
 private fun sentenceTypeFromDb(value: Any?): String = when (value?.toString()) {
     "S" -> "Progressão semiaberto"
@@ -59,6 +60,8 @@ private fun jailFromDb(value: Any?): String = when (value?.toString()) {
     "R" -> "Regime Aberto"
     else -> ""
 }
+
+private fun attorneyFromDb(value: Any?): String = value?.toString()?.takeIf { it == "DPE" || it == "Advogado" } ?: "DPE"
 
 @Composable
 private fun SectionTitle(text: String) {
@@ -89,7 +92,7 @@ private fun FormError(message: String) {
 fun prisonerForm(
     initial: Prisoner? = null,
     onDismiss: () -> Unit,
-    onConfirm: (String, String, String, String, String, String, String, String, String) -> Unit
+    onConfirm: (String, String, String, String, String, String, String, String, String, String) -> Unit
 ) {
     var lawsuitNum by remember(initial) { mutableStateOf(initial?.lawsuitNum()?.takeIf { it.isNotBlank() } ?: "") }
     var prisonerName by remember(initial) { mutableStateOf(initial?.prisonerName() ?: "") }
@@ -103,6 +106,7 @@ fun prisonerForm(
         val ap = initial?.administrativePending()?.toString()
         mutableStateOf(ap?.takeIf { it.isNotBlank() && it in PENDING } ?: PENDING.first())
     }
+    var attorney by remember(initial) { mutableStateOf(attorneyFromDb(initial?.attorney())) }
 
     var loading by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -130,7 +134,8 @@ fun prisonerForm(
                         dateLastService.toFormattedDate(),
                         dateTransferApac.toFormattedDate(),
                         jail,
-                        administrativePending
+                        administrativePending,
+                        attorney
                     )
                 }
                 onDismiss()
@@ -236,8 +241,18 @@ fun prisonerForm(
                         DropdownField("Unidade prisional", JAILS, jail) { jail = it }
                     }
                 }
-                DropdownField("Pendência administrativa", PENDING, administrativePending) {
-                    administrativePending = it
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        DropdownField("Defesa", ATTORNEYS, attorney) { attorney = it }
+                    }
+                    Column(Modifier.weight(1f)) {
+                        DropdownField("Pendência administrativa", PENDING, administrativePending) {
+                            administrativePending = it
+                        }
+                    }
                 }
 
                 error?.let { FormError(it) }

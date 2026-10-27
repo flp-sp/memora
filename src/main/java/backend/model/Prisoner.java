@@ -12,5 +12,6 @@ public record Prisoner(
     LocalDate dateLastService,
     LocalDate dateTransferApac,
     char jail,
-    String administrativePending
+    String administrativePending,
+    String attorney
 ) {}

@@ -20,8 +20,9 @@ public class PrisonerDao {
                     String dateLastService,
                     String dateTransferApac,
                     String jail,
-                    String adiministrativePending) throws SQLException{
-        String sql = "INSERT INTO prisoner(lawsuit_number, prisoner_name, duty_date, sentence_type, date_last_analysis, date_last_service, date_transfer_apac, jail, administrative_pending) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    String adiministrativePending,
+                    String attorney) throws SQLException{
+        String sql = "INSERT INTO prisoner(lawsuit_number, prisoner_name, duty_date, sentence_type, date_last_analysis, date_last_service, date_transfer_apac, jail, administrative_pending, attorney) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try(Connection connection = Database.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
@@ -54,6 +55,7 @@ public class PrisonerDao {
                 }
                 ps.setString(8, convertToChar(jail));
                 ps.setString(9, emptyToNull(adiministrativePending));
+                ps.setString(10, attorney == null || attorney.isBlank() ? "DPE" : attorney);
                 ps.executeUpdate();
             }
     }
@@ -67,11 +69,12 @@ public class PrisonerDao {
                     String dateLastService,
                     String dateTransferApac,
                     String jail,
-                    String adiministrativePending) throws SQLException{
+                    String adiministrativePending,
+                    String attorney) throws SQLException{
 
         String sql = "UPDATE prisoner SET lawsuit_number = ?, prisoner_name = ?,"
                     +"duty_date = ?, sentence_type = ?, date_last_analysis = ?, "
-                    +"date_last_service = ?, date_transfer_apac = ?, jail = ?, administrative_pending = ? WHERE id = ?";
+                    +"date_last_service = ?, date_transfer_apac = ?, jail = ?, administrative_pending = ?, attorney = ? WHERE id = ?";
 
         try(Connection connection = Database.getConnection();
             PreparedStatement ps = connection.prepareStatement(sql)){
@@ -104,7 +107,8 @@ public class PrisonerDao {
                 }
                 ps.setString(8, convertToChar(jail));
                 ps.setString(9, emptyToNull(adiministrativePending));
-                ps.setLong(10, id);
+                ps.setString(10, attorney == null || attorney.isBlank() ? "DPE" : attorney);
+                ps.setLong(11, id);
                 ps.executeUpdate();
             }
     }
@@ -157,6 +161,10 @@ public class PrisonerDao {
         if (adminPending == null) {
             adminPending = "";
         }
+        String attorney = rSet.getString("attorney");
+        if (attorney == null || attorney.isBlank()) {
+            attorney = "DPE";
+        }
         return new Prisoner(
             rSet.getLong("id"),
             lawsuitNumber,
@@ -167,7 +175,8 @@ public class PrisonerDao {
             lastService,
             transferApac,
             jail,
-            adminPending);
+            adminPending,
+            attorney);
     }
 
     private String convertToChar(String var){
