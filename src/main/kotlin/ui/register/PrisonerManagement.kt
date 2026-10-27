@@ -165,38 +165,44 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
             }
 
             Surface(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                shape = MaterialTheme.shapes.medium,
+                tonalElevation = 0.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
                         "Data de criação",
                         Modifier.width(REGISTER_DATE_WIDTH),
-                        style = MaterialTheme.typography.labelLarge
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         "Descrição",
                         Modifier.weight(REGISTER_DESCRIPTION_WEIGHT),
-                        style = MaterialTheme.typography.labelLarge
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         "Observação",
                         Modifier.weight(REGISTER_OBSERVATION_WEIGHT),
-                        style = MaterialTheme.typography.labelLarge
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         "Autor",
                         Modifier.width(REGISTER_AUTHOR_WIDTH),
-                        style = MaterialTheme.typography.labelLarge
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Text(
                         "Última edição",
                         Modifier.width(REGISTER_EDIT_WIDTH),
-                        style = MaterialTheme.typography.labelLarge
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                     Spacer(Modifier.width(REGISTER_ACTIONS_WIDTH))
                 }
@@ -237,7 +243,7 @@ fun prisonerManagement(selectedPrisoner: Prisoner, userLogado: User, onExit: () 
                                         editingRegister = r
                                         showManagementForm = true
                                     }
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(

@@ -69,8 +69,8 @@ fun PrisonerDetails(prisoner: Prisoner, modifier: Modifier = Modifier) {
     val (dueText, dueColor) = dueInfo(prisoner.dutyDate())
     val (pendingText, pendingColor) = pendingInfo(prisoner.administrativePending())
 
-    val prisonerName = prisoner.prisonerName().takeIf { it.isNotBlank() } ?: "Sem nome"
-    val lawsuitNum = prisoner.lawsuitNum().takeIf { it.isNotBlank() }
+    val prisonerName = prisoner.prisonerName()?.takeIf { it.isNotBlank() } ?: "Sem nome"
+    val lawsuitNum = prisoner.lawsuitNum()?.takeIf { it.isNotBlank() }
     val sentenceTypeChar = prisoner.sentenceType().takeIf { it != 0.toChar() && it.code != 0 }
     val jailChar = prisoner.jail().takeIf { it != 0.toChar() && it.code != 0 }
 

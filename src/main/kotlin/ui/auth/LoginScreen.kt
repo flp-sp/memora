@@ -124,11 +124,12 @@ fun loginScreen(service: UserService, onLogin: (User) -> Unit, toSignin: (Boolea
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                shape = MaterialTheme.shapes.large
             ) {
                 Column(
-                    modifier = Modifier.padding(32.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                    modifier = Modifier.padding(36.dp),
+                    verticalArrangement = Arrangement.spacedBy(18.dp)
                 ) {
                     Text("Acesse sua conta", style = MaterialTheme.typography.headlineSmall)
 

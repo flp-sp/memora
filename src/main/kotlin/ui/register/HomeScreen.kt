@@ -20,8 +20,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,7 +33,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,6 +59,7 @@ import ui.components.fields.DropdownField
 import ui.components.layout.AppHeader
 import ui.forms.prisonerForm
 import ui.forms.userManagement
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private const val PROCESS_WEIGHT = 1.4f
@@ -90,15 +93,19 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
     var prisonerToDelete by remember { mutableStateOf<Prisoner?>(null) }
     var deleteLoading by remember { mutableStateOf(false) }
     var deleteError by remember { mutableStateOf<String?>(null) }
+    var sortAscending by remember { mutableStateOf(true) }
+    var filterWithPending by remember { mutableStateOf(false) }
+    var filterDueSoon by remember { mutableStateOf(false) }
 
     val scope = rememberCoroutineScope()
     val dateFormatter = remember { DateTimeFormatter.ofPattern("dd/MM/yyyy") }
+    val today = remember { LocalDate.now() }
 
     fun loadPrisoners() {
         prisoners = prisonerService.getList()
     }
 
-    val filteredPrisoners = remember(prisoners, searchQuery, jailFilter) {
+    val filteredPrisoners = remember(prisoners, searchQuery, jailFilter, sortAscending, filterWithPending, filterDueSoon) {
         val q = searchQuery.trim()
         val base = if (q.isEmpty()) {
             prisoners
@@ -112,11 +119,30 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
                         p.lawsuitNum().filter { it.isDigit() }.contains(qDigits))
             }
         }
-        if (jailFilter == "TODOS") {
+        val byJail = if (jailFilter == "TODOS") {
             base
         } else {
             base.filter { p -> jailToFilterLabel(p.jail()) == jailFilter }
         }
+        val byPending = if (!filterWithPending) {
+            byJail
+        } else {
+            byJail.filter { p ->
+                val pending = p.administrativePending()?.trim()?.uppercase().orEmpty()
+                pending.isNotEmpty() && pending != "SEM PENDÊNCIA" && pending != "SEM PENDENCIA"
+            }
+        }
+        val byDue = if (!filterDueSoon) {
+            byPending
+        } else {
+            byPending.filter { p ->
+                val duty = p.dutyDate() ?: return@filter false
+                val days = java.time.temporal.ChronoUnit.DAYS.between(today, duty)
+                days <= 7
+            }
+        }
+        val sorted = byDue.sortedBy { p -> p.prisonerName().lowercase() }
+        if (sortAscending) sorted else sorted.asReversed()
     }
 
     LaunchedEffect(Unit) {
@@ -182,38 +208,71 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                shape = MaterialTheme.shapes.medium
             ) {
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth().padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        modifier = Modifier.weight(1f),
-                        label = { Text("Pesquisar por nome ou nº do processo") },
-                        leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
-                        trailingIcon = {
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(onClick = { searchQuery = "" }) {
-                                    Icon(Icons.Default.Close, contentDescription = "Limpar pesquisa")
-                                }
-                            }
-                        },
-                        singleLine = true
-                    )
-                    Column(modifier = Modifier.width(220.dp)) {
-                        DropdownField("Unidade", JAIL_FILTER_OPTIONS, jailFilter) { jailFilter = it }
-                    }
-                    Button(
-                        onClick = { showPrisonerForm = true },
-                        modifier = Modifier.height(56.dp)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text("Adicionar preso")
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            modifier = Modifier.weight(1f),
+                            label = { Text("Pesquisar por nome ou nº do processo") },
+                            placeholder = { Text("Digite nome ou número do processo") },
+                            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                            trailingIcon = {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(onClick = { searchQuery = "" }) {
+                                        Icon(Icons.Default.Close, contentDescription = "Limpar pesquisa")
+                                    }
+                                }
+                            },
+                            singleLine = true,
+                            shape = MaterialTheme.shapes.medium
+                        )
+                        Column(modifier = Modifier.width(220.dp)) {
+                            DropdownField("Unidade", JAIL_FILTER_OPTIONS, jailFilter) { jailFilter = it }
+                        }
+                        Button(
+                            onClick = { showPrisonerForm = true },
+                            modifier = Modifier.height(56.dp)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(Modifier.width(8.dp))
+                            Text("Adicionar preso")
+                        }
+                    }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        FilterChip(
+                            selected = sortAscending,
+                            onClick = { sortAscending = !sortAscending },
+                            label = { Text(if (sortAscending) "Ordenar: A-Z" else "Ordenar: Z-A") }
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { filterWithPending = !filterWithPending }
+                        ) {
+                            Checkbox(checked = filterWithPending, onCheckedChange = { filterWithPending = it })
+                            Text("Somente com pendência administrativa")
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { filterDueSoon = !filterDueSoon }
+                        ) {
+                            Checkbox(checked = filterDueSoon, onCheckedChange = { filterDueSoon = it })
+                            Text("Direito a vencer ou vencido (até 7 dias)")
+                        }
                     }
                 }
             }
@@ -234,19 +293,20 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
             }
 
             Surface(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.small,
+                color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f),
+                shape = MaterialTheme.shapes.medium,
+                tonalElevation = 0.dp,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Processo", Modifier.weight(PROCESS_WEIGHT), style = MaterialTheme.typography.labelLarge)
-                    Text("Nome", Modifier.weight(NAME_WEIGHT), style = MaterialTheme.typography.labelLarge)
-                    Text("Último atendimento", Modifier.weight(SERVICE_WEIGHT), style = MaterialTheme.typography.labelLarge)
-                    Text("Direito vencido", Modifier.weight(DUE_WEIGHT), style = MaterialTheme.typography.labelLarge)
-                    Text("Pendência", Modifier.weight(PENDING_WEIGHT), style = MaterialTheme.typography.labelLarge)
+                    Text("Processo", Modifier.weight(PROCESS_WEIGHT), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text("Nome", Modifier.weight(NAME_WEIGHT), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text("Último atendimento", Modifier.weight(SERVICE_WEIGHT), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text("Direito vencido", Modifier.weight(DUE_WEIGHT), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text("Pendência", Modifier.weight(PENDING_WEIGHT), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
                     Spacer(Modifier.width(ACTIONS_WIDTH))
                 }
             }
@@ -290,7 +350,7 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable { onSelectPrisoner(p) }
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    .padding(horizontal = 16.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
