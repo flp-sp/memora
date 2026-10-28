@@ -42,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -64,10 +65,11 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private const val PROCESS_WEIGHT = 1.4f
-private const val NAME_WEIGHT = 2.1f
-private const val SERVICE_WEIGHT = 1.3f
-private const val DUE_WEIGHT = 1.5f
-private const val PENDING_WEIGHT = 1.3f
+private const val NAME_WEIGHT = 2.0f
+private const val SERVICE_WEIGHT = 1.2f
+private const val DUE_WEIGHT = 1.4f
+private const val PENDING_WEIGHT = 1.2f
+private const val ATTORNEY_WEIGHT = 1.0f
 private val ACTIONS_WIDTH = 176.dp
 
 private val JAIL_FILTER_OPTIONS = listOf("TODOS", "APAC", "UPTIM", "Regime Aberto")
@@ -340,6 +342,7 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
                 ) {
                     Text("Processo", Modifier.weight(PROCESS_WEIGHT), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
                     Text("Nome", Modifier.weight(NAME_WEIGHT), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
+                    Text("Defesa", Modifier.weight(ATTORNEY_WEIGHT), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
                     Text("Último atendimento", Modifier.weight(SERVICE_WEIGHT), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
                     Text("Direito vencido", Modifier.weight(DUE_WEIGHT), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
                     Text("Pendência", Modifier.weight(PENDING_WEIGHT), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
@@ -375,6 +378,8 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
                         val (dueText, dueColor) = dueInfo(p.dutyDate())
                         val (pendingText, pendingColor) = pendingInfo(p.administrativePending())
                         val formattedLastService = p.dateLastService()?.format(dateFormatter) ?: "—"
+                        val attorneyValue = p.attorney()?.takeIf { it.isNotBlank() } ?: "DPE"
+                        val attColor = if (attorneyValue == "DPE") Color(0xFF2E7D32) else Color(0xFFC62828)
 
                         Column(
                             modifier = Modifier.background(
@@ -398,6 +403,14 @@ fun homeScreen(usuarioLogado: User, onSelectPrisoner: (Prisoner) -> Unit, onLogo
                                 Text(
                                     p.prisonerName(),
                                     Modifier.weight(NAME_WEIGHT),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Text(
+                                    attorneyValue,
+                                    Modifier.weight(ATTORNEY_WEIGHT),
+                                    color = attColor,
+                                    fontWeight = FontWeight.SemiBold,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis
                                 )
